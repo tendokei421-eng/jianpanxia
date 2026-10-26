@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f7f7f7;
+  --color-surface: #ffffff;
+  --color-ink: #171717;
+  --color-mute: #5e5e5e;
+  --color-rule: #e4e4e4;
+  --color-seal: #c8102e;
+  --font-sans: "Noto Sans SC", "WenQuanYi Zen Hei", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-display: "Noto Serif SC", "Noto Sans SC", "Songti SC", "SimSun", serif;
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  button:focus-visible,
+  [role="slider"]:focus-visible {
+    outline: 2px solid var(--color-seal);
+    outline-offset: 2px;
+  }
+}
+
+@keyframes danmaku-fly {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-120vw, 0, 0);
+  }
+}
+
+.danmaku-item {
+  left: 100%;
+  animation: danmaku-fly 11s linear infinite;
+  animation-duration: 11s !important;
+  animation-iteration-count: infinite !important;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
