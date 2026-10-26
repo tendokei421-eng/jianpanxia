@@ -99,28 +99,31 @@ function VideoPlayer({
   captions,
   videoSrc,
   danmaku,
+  mine,
 }: {
   durationSec: number;
   captions: string[];
   videoSrc?: string;
   danmaku: string[];
+  mine?: string;
 }) {
-  if (videoSrc) return <FilePlayer src={videoSrc} captions={captions} danmaku={danmaku} />;
-  return <PlaceholderPlayer durationSec={durationSec} captions={captions} danmaku={danmaku} />;
+  if (videoSrc) return <FilePlayer src={videoSrc} captions={captions} danmaku={danmaku} mine={mine} />;
+  return <PlaceholderPlayer durationSec={durationSec} captions={captions} danmaku={danmaku} mine={mine} />;
 }
 
-function Danmaku({ lines, playing }: { lines: string[]; playing: boolean }) {
+function Danmaku({ lines, playing, mine }: { lines: string[]; playing: boolean; mine?: string }) {
+  const posted = mine?.trim() ?? "";
   const items = lines.map((line) => line.trim()).filter((line) => line.length >= 2);
-  if (items.length === 0) return null;
+  if (items.length === 0 && !posted) return null;
   return (
     <div
-      className={`pointer-events-none absolute inset-x-0 top-0 bottom-14 z-10 overflow-hidden ${playing ? "visible" : "invisible"}`}
+      className={`pointer-events-none absolute inset-x-0 top-0 bottom-14 z-10 overflow-hidden ${playing || posted ? "visible" : "invisible"}`}
       aria-hidden="true"
     >
       {items.map((text, index) => (
         <span
           key={`${index}-${text}`}
-          className="danmaku-item absolute top-0 px-2 text-sm font-medium whitespace-nowrap text-surface"
+          className={`danmaku-item absolute top-0 px-2 text-sm font-medium whitespace-nowrap text-surface ${playing ? "" : "invisible"}`}
           style={{
             marginTop: `${4 + (index % 7) * 11}%`,
             animationDelay: `${-index * 0.85}s`,
@@ -129,6 +132,19 @@ function Danmaku({ lines, playing }: { lines: string[]; playing: boolean }) {
           {text}
         </span>
       ))}
+      {posted && playing ? (
+        <span
+          className="danmaku-item absolute top-0 border-2 border-white bg-ink/75 px-2 py-0.5 text-sm font-medium whitespace-nowrap text-surface"
+          style={{ marginTop: "18%", animationDelay: "0s" }}
+        >
+          {posted}
+        </span>
+      ) : null}
+      {posted && !playing ? (
+        <p className="absolute top-12 right-3 left-3 border-2 border-white bg-ink/75 px-2 py-1 text-sm leading-snug text-surface">
+          {posted}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -137,7 +153,17 @@ function mediaSrc(src: string): string {
   return src.replace(/^\//, "");
 }
 
-function FilePlayer({ src, captions, danmaku }: { src: string; captions: string[]; danmaku: string[] }) {
+function FilePlayer({
+  src,
+  captions,
+  danmaku,
+  mine,
+}: {
+  src: string;
+  captions: string[];
+  danmaku: string[];
+  mine?: string;
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -175,10 +201,12 @@ function FilePlayer({ src, captions, danmaku }: { src: string; captions: string[
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    const onError = () => setBroken(true);
-    v.addEventListener("error", onError);
-    return () => v.removeEventListener("error", onError);
-  }, []);
+    const prefix = /^\/hds-[a-z0-9]+-\d+-[a-z0-9]+/i.exec(window.location.pathname)?.[0];
+    if (!prefix) return;
+    const actual = new URL(v.currentSrc || v.src, window.location.href).pathname;
+    if (actual.startsWith(`${prefix}/`)) return;
+    v.src = `${prefix}/${src.replace(/^\//, "")}`;
+  }, [src]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -230,9 +258,11 @@ function FilePlayer({ src, captions, danmaku }: { src: string; captions: string[
       <div className="relative isolate aspect-[9/16] bg-ink">
         <video
           ref={videoRef}
+          src={resolved}
+          controls
           playsInline
-          preload="none"
-          className="pointer-events-none absolute inset-0 z-0 h-full w-full object-contain"
+          preload="metadata"
+          className="absolute inset-0 z-0 h-full w-full bg-ink object-contain"
           onTimeUpdate={(event) => setTime(event.currentTarget.currentTime)}
           onLoadedMetadata={(event) => {
             setDuration(event.currentTarget.duration || 0);
@@ -254,19 +284,17 @@ function FilePlayer({ src, captions, danmaku }: { src: string; captions: string[
             {line}
           </p>
         ) : null}
-        <Danmaku lines={danmaku} playing={playing} />
-        <button
-          type="button"
-          onClick={() => toggleRef.current()}
-          aria-label={playing ? "暂停" : ended ? "重播" : "播放"}
-          className="absolute inset-0 z-30"
-        >
-          {!playing ? (
-            <span className="pointer-events-none absolute top-1/2 left-1/2 grid size-16 -translate-x-1/2 -translate-y-1/2 place-items-center bg-seal text-surface">
-              {ended ? <RotateCcw className="size-6" /> : <Play className="size-6" />}
-            </span>
-          ) : null}
-        </button>
+        <Danmaku lines={danmaku} playing={playing} mine={mine} />
+        {!playing ? (
+          <button
+            type="button"
+            onClick={() => toggleRef.current()}
+            aria-label={ended ? "重播" : "播放"}
+            className="absolute top-1/2 left-1/2 z-30 grid size-16 -translate-x-1/2 -translate-y-1/2 place-items-center bg-seal text-surface"
+          >
+            {ended ? <RotateCcw className="size-6" /> : <Play className="size-6" />}
+          </button>
+        ) : null}
       </div>
       <div className="flex items-center gap-1 px-2 py-1">
         <button
@@ -323,10 +351,12 @@ function PlaceholderPlayer({
   durationSec,
   captions,
   danmaku,
+  mine,
 }: {
   durationSec: number;
   captions: string[];
   danmaku: string[];
+  mine?: string;
 }) {
   const duration = Math.max(1, durationSec);
   const lines = captions.map((line) => line.trim()).filter(Boolean);
@@ -455,7 +485,7 @@ function PlaceholderPlayer({
             className="absolute inset-0"
           />
         )}
-        <Danmaku lines={danmaku} playing={playing} />
+        <Danmaku lines={danmaku} playing={playing} mine={mine} />
       </div>
       <div className="flex items-center gap-1 px-2 py-1">
         <button
@@ -551,6 +581,7 @@ function StageScreen({
   panel: Panel;
 }) {
   const selected = level.comments.find((option) => option.id === choiceId) ?? null;
+  const posted = selected && !selected.abstain ? selected.posted?.trim() ?? "" : "";
 
   return (
     <main className="min-h-dvh bg-paper text-ink">
@@ -574,6 +605,7 @@ function StageScreen({
           captions={level.captions}
           videoSrc={level.videoSrc}
           danmaku={level.danmaku}
+          mine={posted}
         />
 
         <h1 className="mt-5 font-display text-2xl text-ink">{level.title.trim() || `第 ${index + 1} 关`}</h1>
@@ -628,7 +660,7 @@ function StageScreen({
               return (
                 <li key={option.id}>
                   <a
-                    href={stageHref(index, "outcome", option.id)}
+                    href={stageHref(index, null, option.id)}
                     className={
                       "flex min-h-14 w-full items-center justify-between gap-3 border px-4 py-3 text-left " +
                       (active ? "border-seal" : "border-rule")

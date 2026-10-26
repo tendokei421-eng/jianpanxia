@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>键盘侠模拟器</title>
+    <style>
+      :root {
+        --paper: #f7f7f7;
+        --surface: #fff;
+        --ink: #171717;
+        --mute: #5e5e5e;
+        --rule: #e4e4e4;
+        --seal: #c8102e;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      }
+      button, a { font: inherit; }
+      button { cursor: pointer; }
+      .bar { height: 4px; background: var(--seal); }
+      .wrap { max-width: 48rem; margin: 0 auto; padding: 1rem 1rem 6rem; }
+      h1 { font-family: "Songti SC", "Noto Serif SC", serif; font-weight: 650; }
+      .screen { min-height: 100dvh; display: flex; flex-direction: column; }
+      .hero { flex: 1; display: grid; place-items: center; text-align: left; padding: 2rem 1rem; }
+      .seal-btn, .ghost-btn, .red-play {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-height: 3rem; border: 0; text-decoration: none;
+      }
+      .seal-btn { background: var(--seal); color: var(--surface); padding: 0 2.5rem; }
+      .ghost-btn { background: var(--surface); color: var(--ink); border: 1px solid var(--ink); }
+      .player { max-width: 24rem; margin: 0 auto; border: 1px solid var(--rule); background: var(--surface); }
+      .stage { position: relative; aspect-ratio: 9/16; background: #111; overflow: hidden; }
+      video { width: 100%; height: 100%; object-fit: contain; background: #111; display: block; }
+      .red-play {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        width: 4rem; height: 4rem; background: var(--seal); color: #fff; z-index: 3;
+      }
+      .danmaku {
+        position: absolute; inset: 0 0 3.5rem 0; overflow: hidden; pointer-events: none; z-index: 2;
+      }
+      .fly {
+        position: absolute; left: 100%; top: 0; white-space: nowrap;
+        color: #fff; font-size: 0.9rem; text-shadow: 0 1px 2px rgb(0 0 0 / 0.9);
+        animation: fly 11s linear infinite;
+      }
+      .mine {
+        border: 2px solid #fff; background: rgb(0 0 0 / 0.72); padding: 0.15rem 0.45rem;
+      }
+      .hold {
+        position: absolute; top: 3rem; left: 0.75rem; right: 0.75rem; z-index: 4;
+        border: 2px solid #fff; background: rgb(0 0 0 / 0.72); color: #fff;
+        padding: 0.35rem 0.5rem; font-size: 0.9rem; line-height: 1.45;
+      }
+      @keyframes fly { to { transform: translate3d(-120vw, 0, 0); } }
+      .blank {
+        aspect-ratio: 16/9; display: grid; place-items: center; background: #111; color: #fff;
+      }
+      .mark {
+        width: 4rem; height: 4rem; display: grid; place-items: center;
+        border: 2px solid var(--seal); color: var(--seal); font-family: "Songti SC", serif; font-size: 1.5rem;
+      }
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1.25rem; }
+      .follow {
+        position: fixed; right: 1rem; bottom: 1rem; z-index: 20;
+        border: 1px solid var(--seal); background: #fff; color: var(--seal);
+        min-height: 3rem; padding: 0 1rem;
+      }
+      .sheet {
+        position: fixed; inset: 0; z-index: 40; background: rgb(0 0 0 / 0.35);
+        display: grid; align-items: end;
+      }
+      .card { background: #fff; padding: 1rem 1rem 1.5rem; max-height: 80dvh; overflow: auto; }
+      .opt {
+        display: block; width: 100%; text-align: left; background: #fff;
+        border: 1px solid var(--rule); padding: 0.75rem 1rem; margin-top: 0.75rem;
+      }
+      .opt small { color: var(--seal); display: block; }
+      .muted { color: var(--mute); }
+      .hidden { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      const LEVELS = [
+        {
+          title: "学校辟谣学生升旗老师台下给校长打伞：俩人系父女，已报警",
+          video: "videos/level-1.mp4",
+          summary: "女教师在操场上为身旁背手站立的年长男子撑伞，被配以“讨好校领导”“职场谄媚”的解读，引发声讨。学校工作人员向媒体称两人是父女关系。",
+          danmaku: ["作秀","谄媚","带节奏","真是父女","讨好领导","给校长打伞","背手像检阅","就一把伞，刻意","学校的解释我不信","报警两个字在带节奏","职场谄媚，看不下去","如果是父女，标题就在带节奏","升旗仪式上还打伞，画面太怪了","女老师撑伞，男的背手，谁看了不多想","评论区已经判完了，视频才放了几秒","先别急着骂，等官方把关系说清楚"],
+          comments: [
+            ["跟随大部分人的看法", "就是讨好校领导，父女是借口"],
+            ["故意和弹幕风向反着来", "父女撑伞很正常，别跟着骂"],
+            ["先独立思考再发表评论", "画面容易让人误会，但学校说是父女，先别按标题定罪"],
+            ["不发表任何评论", ""]
+          ]
+        },
+        { title: "", video: "", summary: "", danmaku: [], comments: [["待填写", ""], ["待填写", ""], ["不发表评论", ""]] },
+        { title: "", video: "", summary: "", danmaku: [], comments: [["待填写", ""], ["待填写", ""], ["不发表评论", ""]] }
+      ];
+      const ORD = ["一", "二", "三", "四", "五"];
+      const state = { view: "title", level: 0, panel: "", choice: null, playing: false };
+
+      function el(html) {
+        const root = document.createElement("div");
+        root.innerHTML = html;
+        return root;
+      }
+
+      function render() {
+        const app = document.getElementById("app");
+        app.replaceChildren();
+        if (state.view === "title") {
+          app.append(el(`
+            <main class="screen">
+              <div class="bar"></div>
+              <div class="hero">
+                <div>
+                  <p class="muted">闯关演示</p>
+                  <h1 style="font-size:2.4rem;margin:0.5rem 0">键盘侠模拟器</h1>
+                  <p class="muted">一部视频，两个按钮，一次选择。</p>
+                  <button class="seal-btn" id="start" style="margin-top:1.5rem">开始</button>
+                </div>
+              </div>
+            </main>`));
+          document.getElementById("start").onclick = () => { state.view = "play"; state.level = 0; state.panel = ""; state.choice = null; render(); };
+          return;
+        }
+        const level = LEVELS[state.level];
+        const posted = state.choice == null ? "" : (level.comments[state.choice][1] || "");
+        const root = el(`
+          <main>
+            <div class="bar"></div>
+            <header class="wrap" style="display:flex;justify-content:space-between;padding-bottom:0">
+              <div>
+                <strong>键盘侠模拟器</strong>
+                <p class="muted" style="margin:0.25rem 0 0">第 ${state.level + 1} 关 / 共 ${LEVELS.length} 关</p>
+              </div>
+              <button id="home" style="background:none;border:0;color:var(--mute)">回到开场</button>
+            </header>
+            <div class="wrap">
+              <div class="player" id="player"></div>
+              <h1 style="font-size:1.5rem">${level.title || "第 " + (state.level + 1) + " 关"}</h1>
+              ${level.title ? "" : '<p class="muted">视频标题留白</p>'}
+              <div class="grid2">
+                <button class="ghost-btn" id="summary">内容总结</button>
+                <button class="seal-btn" id="comment">发表评论</button>
+              </div>
+              ${state.choice == null ? "" : `<p class="muted">本关选择 <span style="color:var(--ink)">${level.comments[state.choice][0]}</span></p>`}
+            </div>
+            <button class="follow" id="follow">查看后续</button>
+          </main>`);
+        app.append(root);
+        const player = document.getElementById("player");
+        if (level.video) {
+          player.innerHTML = `<div class="stage"><video id="vid" src="${level.video}" controls playsinline preload="metadata"></video><div class="danmaku" id="danmaku"></div><button class="red-play" id="play" aria-label="播放">▶</button></div>`;
+        } else {
+          player.innerHTML = `<div class="blank"><div style="text-align:center"><div class="mark">留</div><p>画面留白</p></div></div>`;
+        }
+        document.getElementById("home").onclick = () => { state.view = "title"; render(); };
+        document.getElementById("summary").onclick = () => openSheet("内容总结", level.summary || "此视频的内容总结留白。");
+        document.getElementById("comment").onclick = () => openComments(level);
+        document.getElementById("follow").onclick = () => openFollow();
+        const vid = document.getElementById("vid");
+        if (vid) bindVideo(vid, level, posted);
+        if (state.panel === "summary") openSheet("内容总结", level.summary || "此视频的内容总结留白。");
+        if (state.panel === "comments") openComments(level);
+        if (state.panel === "follow") openFollow();
+      }
+
+      function bindVideo(vid, level, posted) {
+        const play = document.getElementById("play");
+        const layer = document.getElementById("danmaku");
+        function sync() {
+          state.playing = !vid.paused && !vid.ended;
+          play.classList.toggle("hidden", state.playing);
+          drawDanmaku(layer, level.danmaku, posted, state.playing);
+        }
+        play.onclick = () => {
+          if (vid.ended) vid.currentTime = 0;
+          const job = vid.paused ? vid.play() : vid.pause();
+          if (job && job.catch) job.catch(() => {});
+        };
+        vid.addEventListener("play", sync);
+        vid.addEventListener("pause", sync);
+        vid.addEventListener("ended", sync);
+        drawDanmaku(layer, level.danmaku, posted, false);
+      }
+
+      function drawDanmaku(layer, lines, posted, playing) {
+        layer.replaceChildren();
+        if (!playing && posted) {
+          const hold = document.createElement("p");
+          hold.className = "hold";
+          hold.textContent = posted;
+          layer.append(hold);
+        }
+        if (!playing) return;
+        lines.forEach((text, i) => {
+          const span = document.createElement("span");
+          span.className = "fly";
+          span.textContent = text;
+          span.style.marginTop = (4 + (i % 7) * 11) + "%";
+          span.style.animationDelay = (-i * 0.85) + "s";
+          layer.append(span);
+        });
+        if (posted) {
+          const mine = document.createElement("span");
+          mine.className = "fly mine";
+          mine.textContent = posted;
+          mine.style.marginTop = "18%";
+          layer.append(mine);
+        }
+      }
+
+      function openSheet(title, body) {
+        state.panel = title === "内容总结" ? "summary" : state.panel;
+        closeSheet();
+        const sheet = el(`<div class="sheet" id="sheet"><div class="card"><div style="display:flex;justify-content:space-between"><strong>${title}</strong><button id="close" style="border:0;background:none;font-size:1.25rem">×</button></div><p>${body}</p></div></div>`);
+        document.body.append(sheet);
+        document.getElementById("close").onclick = () => { state.panel = ""; closeSheet(); };
+        sheet.firstElementChild.onclick = (event) => { if (event.target.id === "sheet") { state.panel = ""; closeSheet(); } };
+      }
+
+      function openComments(level) {
+        state.panel = "comments";
+        closeSheet();
+        const opts = level.comments.map((item, i) => `<button class="opt" data-i="${i}"><small>选项${ORD[i]}</small>${item[0]}</button>`).join("");
+        const sheet = el(`<div class="sheet" id="sheet"><div class="card"><div style="display:flex;justify-content:space-between"><strong>发表评论</strong><button id="close" style="border:0;background:none;font-size:1.25rem">×</button></div>${opts}</div></div>`);
+        document.body.append(sheet);
+        document.getElementById("close").onclick = () => { state.panel = ""; closeSheet(); };
+        sheet.querySelectorAll("[data-i]").forEach((button) => {
+          button.onclick = () => {
+            state.choice = Number(button.getAttribute("data-i"));
+            state.panel = "";
+            closeSheet();
+            render();
+          };
+        });
+      }
+
+      function openFollow() {
+        state.panel = "follow";
+        closeSheet();
+        const prev = state.level === 0 ? `<span class="ghost-btn" style="color:var(--mute)">上一关</span>` : `<button class="ghost-btn" id="prev">上一关</button>`;
+        const next = state.level < LEVELS.length - 1 ? `<button class="seal-btn" id="next">下一关</button>` : `<button class="seal-btn" id="next">回到开场</button>`;
+        const sheet = el(`<div class="sheet" id="sheet"><div class="card"><div style="display:flex;justify-content:space-between"><strong>后续</strong><button id="close" style="border:0;background:none;font-size:1.25rem">×</button></div><p class="muted">第 ${state.level + 1} 关的后续留白。</p><div class="grid2">${prev}${next}</div></div></div>`);
+        document.body.append(sheet);
+        document.getElementById("close").onclick = () => { state.panel = ""; closeSheet(); };
+        const prevBtn = document.getElementById("prev");
+        if (prevBtn) prevBtn.onclick = () => { state.level -= 1; state.choice = null; state.panel = ""; closeSheet(); render(); };
+        document.getElementById("next").onclick = () => {
+          if (state.level < LEVELS.length - 1) { state.level += 1; state.choice = null; state.panel = ""; }
+          else state.view = "title";
+          closeSheet();
+          render();
+        };
+      }
+
+      function closeSheet() {
+        const old = document.getElementById("sheet");
+        if (old) old.remove();
+      }
+
+      render();
+    </script>
+  </body>
+</html>

@@ -2,7 +2,8 @@
  * 键盘侠模拟器 · 关卡文案
  *
  * 只改这个文件就能补内容。字符串留空 "" 时，界面显示「留白」。
- * 每关 comments 请保持 3 项，其中恰好一项 abstain: true（不发表评论）。
+ * 选项数量不限。abstain: true 的一项是不发表评论，不会进弹幕。
+ * posted 是选中后投到弹幕里的句子。
  */
 
 export type CommentOption = {
@@ -13,6 +14,8 @@ export type CommentOption = {
   abstain?: boolean;
   /** 点选之后的反馈。留空则显示留白。 */
   outcome: string;
+  /** 选中后投到弹幕区的句子。留空或 abstain 时不发弹幕。 */
+  posted?: string;
 };
 
 export type Level = {
@@ -62,9 +65,25 @@ export const LEVELS: Level[] = [
       "先别急着骂，等官方把关系说清楚",
     ],
     comments: [
-      { id: "l1-a", text: "", outcome: "" },
-      { id: "l1-b", text: "", outcome: "" },
-      { id: "l1-skip", text: "不发表评论", abstain: true, outcome: "" },
+      {
+        id: "l1-a",
+        text: "跟随大部分人的看法",
+        posted: "就是讨好校领导，父女是借口",
+        outcome: "",
+      },
+      {
+        id: "l1-b",
+        text: "故意和弹幕风向反着来",
+        posted: "父女撑伞很正常，别跟着骂",
+        outcome: "",
+      },
+      {
+        id: "l1-c",
+        text: "先独立思考再发表评论",
+        posted: "画面容易让人误会，但学校说是父女，先别按标题定罪",
+        outcome: "",
+      },
+      { id: "l1-skip", text: "不发表任何评论", abstain: true, outcome: "" },
     ],
     followUp: "",
   },
