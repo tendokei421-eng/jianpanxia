@@ -111,37 +111,26 @@ function VideoPlayer({
   return <PlaceholderPlayer durationSec={durationSec} captions={captions} danmaku={danmaku} mine={mine} />;
 }
 
-function Danmaku({ lines, playing, mine }: { lines: string[]; playing: boolean; mine?: string }) {
-  const posted = mine?.trim() ?? "";
+function DanmakuLane({ lines, mine }: { lines: string[]; mine?: string }) {
   const items = lines.map((line) => line.trim()).filter((line) => line.length >= 2);
+  const posted = mine?.trim() ?? "";
   if (items.length === 0 && !posted) return null;
   return (
-    <div
-      className="danmaku-layer pointer-events-none absolute inset-x-0 top-0 bottom-16 z-[3] overflow-hidden"
-      aria-hidden="true"
-    >
+    <div className="danmaku-lane" aria-hidden="true">
       {items.map((text, index) => (
         <span
           key={`${index}-${text}`}
           className="danmaku-item absolute top-0 px-2 text-sm font-medium whitespace-nowrap text-surface"
           style={{
-            marginTop: `${4 + (index % 7) * 11}%`,
-            animationDelay: `${-index * 0.85}s`,
+            marginTop: `${8 + (index % 4) * 22}%`,
+            animationDelay: `${-index * 0.8}s`,
           }}
         >
           {text}
         </span>
       ))}
-      {posted && playing ? (
-        <span
-          className="danmaku-item absolute top-0 border-2 border-white bg-ink/75 px-2 py-0.5 text-sm font-medium whitespace-nowrap text-surface"
-          style={{ marginTop: "18%", animationDelay: "0s" }}
-        >
-          {posted}
-        </span>
-      ) : null}
-      {posted && !playing ? (
-        <p className="absolute top-10 right-3 left-3 z-[4] border-2 border-white bg-ink/75 px-2 py-1 text-sm leading-snug text-surface">
+      {posted ? (
+        <p className="absolute top-2 right-2 left-2 z-10 border-2 border-white bg-ink/80 px-2 py-1 text-sm leading-snug text-surface">
           {posted}
         </p>
       ) : null}
@@ -292,14 +281,14 @@ function FilePlayer({
 
   return (
     <div className="mx-auto w-fit max-w-full border border-rule bg-surface">
-      <div className="player-frame relative isolate bg-ink">
+      <div className="player-frame relative bg-ink">
         <video
           ref={videoRef}
           src={initialSrc}
           controls
           playsInline
-          preload="metadata"
-          className="absolute inset-0 z-0 h-full w-full bg-ink object-contain"
+          preload="auto"
+          className="bg-ink object-contain"
           onTimeUpdate={(event) => setTime(event.currentTarget.currentTime)}
           onLoadedMetadata={(event) => {
             setDuration(event.currentTarget.duration || 0);
@@ -311,28 +300,17 @@ function FilePlayer({
           onError={() => setBroken(true)}
         />
         {broken ? (
-          <p className="pointer-events-none absolute inset-x-4 bottom-4 z-10 text-center text-sm text-surface">
-            视频没有加载上
-          </p>
-        ) : null}
-        <p className="pointer-events-none absolute top-3 left-3 z-20 text-xs text-surface/80">{status}</p>
-        {line ? (
-          <p className="pointer-events-none absolute right-4 bottom-4 left-4 z-20 text-sm leading-relaxed text-surface">
-            {line}
-          </p>
-        ) : null}
-        <Danmaku lines={danmaku} playing={playing} mine={mine} />
-        {!playing ? (
-          <button
-            type="button"
-            onClick={() => toggleRef.current()}
-            aria-label={ended ? "重播" : "播放"}
-            className="absolute top-1/2 left-1/2 z-30 grid size-16 -translate-x-1/2 -translate-y-1/2 place-items-center bg-seal text-surface"
-          >
-            {ended ? <RotateCcw className="size-6" /> : <Play className="size-6" />}
-          </button>
+          <p className="absolute inset-x-3 bottom-3 text-center text-sm text-surface">视频没有加载上</p>
         ) : null}
       </div>
+      <button
+        type="button"
+        onClick={() => toggleRef.current()}
+        className="flex h-12 w-full items-center justify-center bg-seal text-base text-surface"
+      >
+        {playing ? "暂停" : ended ? "重播" : "播放"}
+      </button>
+      <DanmakuLane lines={danmaku} mine={mine} />
       <div className="flex items-center gap-1 px-2 py-1">
         <button
           type="button"
@@ -522,7 +500,7 @@ function PlaceholderPlayer({
             className="absolute inset-0"
           />
         )}
-        <Danmaku lines={danmaku} playing={playing} mine={mine} />
+        <DanmakuLane lines={danmaku} mine={mine} />
       </div>
       <div className="flex items-center gap-1 px-2 py-1">
         <button

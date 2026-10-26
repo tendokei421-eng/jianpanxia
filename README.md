@@ -2,7 +2,7 @@
 
 可以直接打开使用：
 
-<https://htmlpreview.github.io/?https://raw.githubusercontent.com/tendokei421-eng/jianpanxia/main/docs/index.html>
+<https://zany-cough-ruisu.ship.place/>
 
 看一条视频，读内容总结，在评论里选一条。白底，红印。
 
