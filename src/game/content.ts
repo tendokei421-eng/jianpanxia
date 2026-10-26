@@ -35,6 +35,8 @@ export type Level = {
   comments: CommentOption[];
   /** 「查看后续」正文。 */
   followUp: string;
+  /** 「查看后续」里用自有播放器自动播放的视频。不用外站播放器。 */
+  followVideo?: string;
 };
 
 export const LEVELS: Level[] = [
@@ -85,7 +87,9 @@ export const LEVELS: Level[] = [
       },
       { id: "l1-skip", text: "不发表任何评论", abstain: true, outcome: "" },
     ],
-    followUp: "",
+    followUp:
+      "两人并非父女，男子是一名退休返聘老教师。事件经历“网友质疑—校方称父女—教育局否认父女”的多次反转。反转本身也可能是一种新的片面；调查不是等一个“说法”就收手，而是直到完整事实经得起核实。",
+    followVideo: "/videos/level-1-follow.mp4",
   },
   {
     id: "level-2",

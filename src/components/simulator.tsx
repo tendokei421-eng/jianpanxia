@@ -88,7 +88,7 @@ function Sheet({
             <X className="size-5" />
           </a>
         </header>
-        <div className="max-h-96 overflow-y-auto px-4 py-4">{children}</div>
+        <div className="max-h-[70dvh] overflow-y-auto px-4 py-4">{children}</div>
       </div>
     </div>
   );
@@ -146,6 +146,44 @@ function Danmaku({ lines, playing, mine }: { lines: string[]; playing: boolean; 
         </p>
       ) : null}
     </div>
+  );
+}
+
+function FollowPlayer({ src }: { src: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const resolved = src.replace(/^\//, "");
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const prefix = /^\/hds-[a-z0-9]+-\d+-[a-z0-9]+/i.exec(window.location.pathname)?.[0];
+    if (prefix) {
+      const actual = new URL(v.currentSrc || v.src, window.location.href).pathname;
+      if (!actual.startsWith(`${prefix}/`)) v.src = `${prefix}/${src.replace(/^\//, "")}`;
+    }
+    const start = () => {
+      const job = v.play();
+      if (job && typeof job.catch === "function") {
+        job.catch(() => {
+          v.muted = true;
+          void v.play().catch(() => {});
+        });
+      }
+    };
+    if (v.readyState >= 2) start();
+    else v.addEventListener("loadeddata", start, { once: true });
+  }, [src]);
+
+  return (
+    <video
+      ref={videoRef}
+      src={resolved}
+      controls
+      autoPlay
+      playsInline
+      preload="auto"
+      className="mx-auto mb-4 max-h-80 w-full bg-ink object-contain"
+    />
   );
 }
 
@@ -696,17 +734,14 @@ function StageScreen({
 
       {panel === "follow" ? (
         <Sheet title="后续" level={index} choice={choiceId}>
+          {level.followVideo ? <FollowPlayer src={level.followVideo} /> : null}
           {level.followUp.trim() ? (
             <p className="text-base leading-relaxed whitespace-pre-wrap text-ink">{level.followUp}</p>
           ) : (
             <Blank hint={`第 ${index + 1} 关的后续留白。`} />
           )}
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            {index === 0 ? (
-              <span className="inline-flex h-12 items-center justify-center border border-rule text-mute">
-                上一关
-              </span>
-            ) : (
+          <div className={index === 0 ? "mt-6" : "mt-6 grid grid-cols-2 gap-3"}>
+            {index === 0 ? null : (
               <a
                 href={stageHref(index - 1)}
                 className="inline-flex h-12 items-center justify-center border border-rule text-ink"
@@ -717,12 +752,12 @@ function StageScreen({
             {index < total - 1 ? (
               <a
                 href={stageHref(index + 1)}
-                className="inline-flex h-12 items-center justify-center bg-seal text-surface"
+                className="inline-flex h-12 w-full items-center justify-center bg-seal text-surface"
               >
                 下一关
               </a>
             ) : (
-              <a href="?" className="inline-flex h-12 items-center justify-center bg-seal text-surface">
+              <a href="?" className="inline-flex h-12 w-full items-center justify-center bg-seal text-surface">
                 回到开场
               </a>
             )}
