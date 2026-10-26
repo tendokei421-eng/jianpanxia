@@ -36,13 +36,21 @@
 }
 
 .player-frame {
+  position: relative;
   height: min(52dvh, 28rem);
   width: min(100%, calc(min(52dvh, 28rem) * 9 / 16));
   margin-inline: auto;
+  overflow: hidden;
   background: #111;
+  transform: translateZ(0);
+  -webkit-mask-image: -webkit-radial-gradient(circle, #fff 100%, #000 100%);
+  mask-image: radial-gradient(circle, #fff 100%, #000 100%);
 }
 
 .player-frame video {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   display: block;
   width: 100%;
   height: 100%;
@@ -50,11 +58,12 @@
   background: #111;
 }
 
-.danmaku-lane {
-  position: relative;
-  height: 7.5rem;
+.danmaku-layer {
+  position: absolute;
+  inset: 0 0 2.75rem 0;
+  z-index: 3;
   overflow: hidden;
-  background: #111;
+  pointer-events: none;
 }
 
 @media (min-width: 640px) {
@@ -78,7 +87,12 @@
   animation: danmaku-fly 11s linear infinite;
   animation-duration: 11s !important;
   animation-iteration-count: infinite !important;
+  animation-play-state: paused;
   text-shadow: 0 1px 2px rgb(0 0 0 / 0.9);
+}
+
+.is-playing .danmaku-item {
+  animation-play-state: running;
 }
 
 @media (prefers-reduced-motion: reduce) {

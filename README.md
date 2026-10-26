@@ -2,7 +2,7 @@
 
 可以直接打开使用：
 
-<https://zany-cough-ruisu.ship.place/>
+<https://spot-brisket-jn162.ship.place/>
 
 看一条视频，读内容总结，在评论里选一条。白底，红印。
 

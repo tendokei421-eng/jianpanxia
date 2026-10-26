@@ -43,20 +43,22 @@
         width: min(100%, calc(min(52dvh, 28rem) * 9 / 16));
         max-width: 100%;
         margin: 0 auto;
+        overflow: hidden;
         background: #111;
+        transform: translateZ(0);
+        -webkit-mask-image: -webkit-radial-gradient(circle, #fff 100%, #000 100%);
+        mask-image: radial-gradient(circle, #fff 100%, #000 100%);
       }
-      .stage video { display: block; width: 100%; height: 100%; object-fit: contain; background: #111; }
+      .stage video { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; object-fit: contain; background: #111; }
+      .danmaku { position: absolute; inset: 0 0 2.6rem 0; z-index: 3; overflow: hidden; pointer-events: none; }
       .playbar { display: flex; width: 100%; min-height: 3rem; align-items: center; justify-content: center; background: var(--seal); color: #fff; border: 0; }
-      .lane { position: relative; height: 7.5rem; overflow: hidden; background: #111; }
-      .red-play {
-        position: absolute; top: 46%; left: 50%; transform: translate(-50%, -50%);
-        width: 4.5rem; height: 4.5rem; background: var(--seal); color: #fff; z-index: 4;
-      }
       .fly {
         position: absolute; left: 100%; top: 0; white-space: nowrap;
         color: #fff; font-size: 0.9rem; text-shadow: 0 1px 2px rgb(0 0 0 / 0.9);
         animation: fly 11s linear infinite;
+        animation-play-state: paused;
       }
+      .stage.on .fly { animation-play-state: running; }
       .mine {
         border: 2px solid #fff; background: rgb(0 0 0 / 0.72); padding: 0.15rem 0.45rem;
       }
@@ -184,7 +186,7 @@
         app.append(root);
         const player = document.getElementById("player");
         if (level.video) {
-          player.innerHTML = `<div class="stage"><video id="vid" src="${level.video}" controls playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="false" preload="auto"></video></div><button class="playbar" id="play" type="button">播放</button><div class="lane" id="danmaku"></div>`;
+          player.innerHTML = `<div class="stage" id="stage"><video id="vid" src="${level.video}" controls playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="false" preload="auto"></video><div class="danmaku" id="danmaku"></div></div><button class="playbar" id="play" type="button">播放</button>`;
         } else {
           player.innerHTML = `<div class="blank"><div style="text-align:center"><div class="mark">留</div><p>画面留白</p></div></div>`;
         }
@@ -194,7 +196,7 @@
         document.getElementById("follow").onclick = () => openFollow();
         const vid = document.getElementById("vid");
         if (vid) bindVideo(vid, level, posted);
-        drawDanmaku(document.getElementById("danmaku"), level.danmaku, posted, false);
+        else drawDanmaku(document.getElementById("danmaku"), level.danmaku, posted, false);
         if (state.panel === "summary") openSheet("内容总结", level.summary || "此视频的内容总结留白。");
         if (state.panel === "comments") openComments(level);
         if (state.panel === "follow") openFollow();
@@ -206,6 +208,8 @@
         function sync() {
           const on = !vid.paused && !vid.ended;
           play.textContent = vid.ended ? "重播" : on ? "暂停" : "播放";
+          document.getElementById("stage").classList.toggle("on", on);
+          drawDanmaku(layer, level.danmaku, posted, on);
         }
         play.onclick = () => {
           if (vid.ended) vid.currentTime = 0;
@@ -218,21 +222,31 @@
         vid.addEventListener("play", sync);
         vid.addEventListener("pause", sync);
         vid.addEventListener("ended", sync);
-        drawDanmaku(layer, level.danmaku, posted);
+        drawDanmaku(layer, level.danmaku, posted, false);
       }
 
-      function drawDanmaku(layer, lines, posted) {
+      function drawDanmaku(layer, lines, posted, playing) {
         if (!layer) return;
         layer.replaceChildren();
+        if (!playing && !posted) return;
         (lines || []).forEach((text, i) => {
+          if (!playing) return;
           const span = document.createElement("span");
           span.className = "fly";
           span.textContent = text;
-          span.style.marginTop = (6 + (i % 4) * 22) + "%";
-          span.style.animationDelay = (-i * 0.8) + "s";
+          span.style.marginTop = (4 + (i % 6) * 14) + "%";
+          span.style.animationDelay = (-i * 0.85) + "s";
           layer.append(span);
         });
         if (!posted) return;
+        if (playing) {
+          const mine = document.createElement("span");
+          mine.className = "fly mine";
+          mine.textContent = posted;
+          mine.style.marginTop = "18%";
+          layer.append(mine);
+          return;
+        }
         const hold = document.createElement("p");
         hold.className = "hold";
         hold.textContent = posted;

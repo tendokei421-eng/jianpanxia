@@ -111,26 +111,34 @@ function VideoPlayer({
   return <PlaceholderPlayer durationSec={durationSec} captions={captions} danmaku={danmaku} mine={mine} />;
 }
 
-function DanmakuLane({ lines, mine }: { lines: string[]; mine?: string }) {
-  const items = lines.map((line) => line.trim()).filter((line) => line.length >= 2);
+function Danmaku({ lines, playing, mine }: { lines: string[]; playing: boolean; mine?: string }) {
   const posted = mine?.trim() ?? "";
+  const items = lines.map((line) => line.trim()).filter((line) => line.length >= 2);
   if (items.length === 0 && !posted) return null;
   return (
-    <div className="danmaku-lane" aria-hidden="true">
+    <div className={"danmaku-layer" + (playing ? " is-playing" : "")} aria-hidden="true">
       {items.map((text, index) => (
         <span
           key={`${index}-${text}`}
           className="danmaku-item absolute top-0 px-2 text-sm font-medium whitespace-nowrap text-surface"
           style={{
-            marginTop: `${8 + (index % 4) * 22}%`,
-            animationDelay: `${-index * 0.8}s`,
+            marginTop: `${4 + (index % 6) * 14}%`,
+            animationDelay: `${-index * 0.85}s`,
           }}
         >
           {text}
         </span>
       ))}
       {posted ? (
-        <p className="absolute top-2 right-2 left-2 z-10 border-2 border-white bg-ink/80 px-2 py-1 text-sm leading-snug text-surface">
+        <span
+          className="danmaku-item absolute top-0 border-2 border-white bg-ink/75 px-2 py-0.5 text-sm font-medium whitespace-nowrap text-surface"
+          style={{ marginTop: "18%", animationDelay: "0s" }}
+        >
+          {posted}
+        </span>
+      ) : null}
+      {posted && !playing ? (
+        <p className="absolute top-10 right-3 left-3 border-2 border-white bg-ink/80 px-2 py-1 text-sm leading-snug text-surface">
           {posted}
         </p>
       ) : null}
@@ -299,6 +307,7 @@ function FilePlayer({
           onEnded={() => setPlaying(false)}
           onError={() => setBroken(true)}
         />
+        <Danmaku lines={danmaku} playing={playing} mine={mine} />
         {broken ? (
           <p className="absolute inset-x-3 bottom-3 text-center text-sm text-surface">视频没有加载上</p>
         ) : null}
@@ -310,7 +319,6 @@ function FilePlayer({
       >
         {playing ? "暂停" : ended ? "重播" : "播放"}
       </button>
-      <DanmakuLane lines={danmaku} mine={mine} />
       <div className="flex items-center gap-1 px-2 py-1">
         <button
           type="button"
@@ -500,7 +508,7 @@ function PlaceholderPlayer({
             className="absolute inset-0"
           />
         )}
-        <DanmakuLane lines={danmaku} mine={mine} />
+        <Danmaku lines={danmaku} playing={playing} mine={mine} />
       </div>
       <div className="flex items-center gap-1 px-2 py-1">
         <button
