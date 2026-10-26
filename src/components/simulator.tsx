@@ -117,13 +117,13 @@ function Danmaku({ lines, playing, mine }: { lines: string[]; playing: boolean; 
   if (items.length === 0 && !posted) return null;
   return (
     <div
-      className={`pointer-events-none absolute inset-x-0 top-0 bottom-14 z-10 overflow-hidden ${playing || posted ? "visible" : "invisible"}`}
+      className="danmaku-layer pointer-events-none absolute inset-x-0 top-0 bottom-16 z-[3] overflow-hidden"
       aria-hidden="true"
     >
       {items.map((text, index) => (
         <span
           key={`${index}-${text}`}
-          className={`danmaku-item absolute top-0 px-2 text-sm font-medium whitespace-nowrap text-surface ${playing ? "" : "invisible"}`}
+          className="danmaku-item absolute top-0 px-2 text-sm font-medium whitespace-nowrap text-surface"
           style={{
             marginTop: `${4 + (index % 7) * 11}%`,
             animationDelay: `${-index * 0.85}s`,
@@ -141,7 +141,7 @@ function Danmaku({ lines, playing, mine }: { lines: string[]; playing: boolean; 
         </span>
       ) : null}
       {posted && !playing ? (
-        <p className="absolute top-12 right-3 left-3 border-2 border-white bg-ink/75 px-2 py-1 text-sm leading-snug text-surface">
+        <p className="absolute top-10 right-3 left-3 z-[4] border-2 border-white bg-ink/75 px-2 py-1 text-sm leading-snug text-surface">
           {posted}
         </p>
       ) : null}
@@ -151,16 +151,16 @@ function Danmaku({ lines, playing, mine }: { lines: string[]; playing: boolean; 
 
 function FollowPlayer({ src }: { src: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const resolved = src.replace(/^\//, "");
+  const initialSrc = src.replace(/^\//, "");
 
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    const prefix = /^\/hds-[a-z0-9]+-\d+-[a-z0-9]+/i.exec(window.location.pathname)?.[0];
-    if (prefix) {
-      const actual = new URL(v.currentSrc || v.src, window.location.href).pathname;
-      if (!actual.startsWith(`${prefix}/`)) v.src = `${prefix}/${src.replace(/^\//, "")}`;
-    }
+    markInline(v);
+    const next = resolveMedia(src);
+    const actual = new URL(v.currentSrc || v.src || next, window.location.href).pathname;
+    const wanted = new URL(next, window.location.href).pathname;
+    if (actual !== wanted) v.src = next;
     const start = () => {
       const job = v.play();
       if (job && typeof job.catch === "function") {
@@ -177,7 +177,7 @@ function FollowPlayer({ src }: { src: string }) {
   return (
     <video
       ref={videoRef}
-      src={resolved}
+      src={initialSrc}
       controls
       autoPlay
       playsInline
@@ -187,8 +187,19 @@ function FollowPlayer({ src }: { src: string }) {
   );
 }
 
-function mediaSrc(src: string): string {
-  return src.replace(/^\//, "");
+function markInline(video: HTMLVideoElement) {
+  video.setAttribute("playsinline", "");
+  video.setAttribute("webkit-playsinline", "");
+  video.setAttribute("x5-playsinline", "");
+  video.setAttribute("x5-video-player-type", "h5");
+  video.setAttribute("x5-video-player-fullscreen", "false");
+}
+
+function resolveMedia(src: string): string {
+  const file = src.replace(/^\//, "");
+  if (typeof window === "undefined") return file;
+  const prefix = /^\/hds-[a-z0-9]+-\d+-[a-z0-9]+/i.exec(window.location.pathname)?.[0];
+  return prefix ? `${prefix}/${file}` : `/${file}`;
 }
 
 function FilePlayer({
@@ -209,41 +220,29 @@ function FilePlayer({
   const [broken, setBroken] = useState(false);
   const lines = captions.map((line) => line.trim()).filter(Boolean);
   const toggleRef = useRef<() => void>(() => {});
-  const resolved = mediaSrc(src);
-
-  function videoUrl(): string {
-    const file = src.startsWith("/") ? src : `/${resolved}`;
-    const prefix = /^\/hds-[a-z0-9]+-\d+-[a-z0-9]+/i.exec(window.location.pathname)?.[0];
-    return `${prefix ?? ""}${file}`;
-  }
-
-  function ensureSrc(v: HTMLVideoElement) {
-    if (v.currentSrc || v.getAttribute("src")) return;
-    v.src = videoUrl();
-  }
+  const initialSrc = src.replace(/^\//, "");
 
   toggleRef.current = () => {
     const v = videoRef.current;
     if (!v) return;
-    ensureSrc(v);
     const ended = v.ended || (Number.isFinite(v.duration) && v.duration > 0 && v.currentTime >= v.duration - 0.05 && v.paused);
-    if (ended) {
-      v.currentTime = 0;
-      void v.play();
+    if (ended) v.currentTime = 0;
+    if (ended || v.paused) {
+      const job = v.play();
+      if (job && typeof job.catch === "function") job.catch(() => setBroken(true));
       return;
     }
-    if (v.paused) void v.play();
-    else v.pause();
+    v.pause();
   };
 
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    const prefix = /^\/hds-[a-z0-9]+-\d+-[a-z0-9]+/i.exec(window.location.pathname)?.[0];
-    if (!prefix) return;
-    const actual = new URL(v.currentSrc || v.src, window.location.href).pathname;
-    if (actual.startsWith(`${prefix}/`)) return;
-    v.src = `${prefix}/${src.replace(/^\//, "")}`;
+    markInline(v);
+    const next = resolveMedia(src);
+    const actual = new URL(v.currentSrc || v.src || next, window.location.href).pathname;
+    const wanted = new URL(next, window.location.href).pathname;
+    if (actual !== wanted) v.src = next;
   }, [src]);
 
   useEffect(() => {
@@ -268,9 +267,9 @@ function FilePlayer({
   function replay() {
     const v = videoRef.current;
     if (!v) return;
-    ensureSrc(v);
     v.currentTime = 0;
-    void v.play();
+    const job = v.play();
+    if (job && typeof job.catch === "function") job.catch(() => setBroken(true));
   }
 
   function seek(event: PointerEvent<HTMLDivElement>) {
@@ -296,7 +295,7 @@ function FilePlayer({
       <div className="player-frame relative isolate bg-ink">
         <video
           ref={videoRef}
-          src={resolved}
+          src={initialSrc}
           controls
           playsInline
           preload="metadata"

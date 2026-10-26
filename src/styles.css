@@ -36,9 +36,24 @@
 }
 
 .player-frame {
+  position: relative;
   height: min(58dvh, 32rem);
   width: min(100%, calc(min(58dvh, 32rem) * 9 / 16));
   aspect-ratio: 9 / 16;
+  overflow: hidden;
+  transform: translateZ(0);
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
+}
+
+.player-frame video {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #111;
 }
 
 @media (min-width: 640px) {

@@ -37,14 +37,18 @@
       .wide { width: 100%; min-height: 3.5rem; }
       .ghost-btn { background: var(--surface); color: var(--ink); border: 1px solid var(--ink); }
       .player { width: fit-content; max-width: 100%; margin: 0 auto; border: 1px solid var(--rule); background: var(--surface); }
-      .stage { position: relative; height: min(58dvh, 32rem); width: min(100%, calc(min(58dvh, 32rem) * 9 / 16)); aspect-ratio: 9/16; max-width: 100%; background: #111; overflow: hidden; }
-      video { width: 100%; height: 100%; object-fit: contain; background: #111; display: block; }
-      .red-play {
-        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        width: 4rem; height: 4rem; background: var(--seal); color: #fff; z-index: 3;
+      .stage {
+        position: relative; overflow: hidden; transform: translateZ(0);
+        height: min(58dvh, 32rem); width: min(100%, calc(min(58dvh, 32rem) * 9 / 16));
+        aspect-ratio: 9/16; max-width: 100%; background: #111;
+        -webkit-mask-image: -webkit-radial-gradient(white, black);
+        mask-image: radial-gradient(white, black);
       }
-      .danmaku {
-        position: absolute; inset: 0 0 3.5rem 0; overflow: hidden; pointer-events: none; z-index: 2;
+      .stage video { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; object-fit: contain; background: #111; }
+      .danmaku { position: absolute; inset: 0 0 3.2rem 0; overflow: hidden; pointer-events: none; z-index: 3; }
+      .red-play {
+        position: absolute; top: 46%; left: 50%; transform: translate(-50%, -50%);
+        width: 4.5rem; height: 4.5rem; background: var(--seal); color: #fff; z-index: 4;
       }
       .fly {
         position: absolute; left: 100%; top: 0; white-space: nowrap;
@@ -108,7 +112,7 @@
       const LEVELS = [
         {
           title: "学校辟谣学生升旗老师台下给校长打伞：俩人系父女，已报警",
-          video: "https://raw.githubusercontent.com/tendokei421-eng/jianpanxia/main/docs/videos/level-1.mp4",
+          video: "videos/level-1.mp4",
           summary: "女教师在操场上为身旁背手站立的年长男子撑伞，被配以“讨好校领导”“职场谄媚”的解读，引发声讨。学校工作人员向媒体称两人是父女关系。",
           danmaku: ["作秀","谄媚","带节奏","真是父女","讨好领导","给校长打伞","背手像检阅","就一把伞，刻意","学校的解释我不信","报警两个字在带节奏","职场谄媚，看不下去","如果是父女，标题就在带节奏","升旗仪式上还打伞，画面太怪了","女老师撑伞，男的背手，谁看了不多想","评论区已经判完了，视频才放了几秒","先别急着骂，等官方把关系说清楚"],
           comments: [
@@ -118,13 +122,20 @@
             ["不发表任何评论", ""]
           ],
           follow: "两人并非父女，男子是一名退休返聘老教师。事件经历“网友质疑—校方称父女—教育局否认父女”的多次反转。反转本身也可能是一种新的片面；调查不是等一个“说法”就收手，而是直到完整事实经得起核实。",
-          followVideo: "https://raw.githubusercontent.com/tendokei421-eng/jianpanxia/main/docs/videos/level-1-follow.mp4"
+          followVideo: "videos/level-1-follow.mp4"
         },
         { title: "", video: "", summary: "", danmaku: [], comments: [["待填写", ""], ["待填写", ""], ["不发表评论", ""]] },
         { title: "", video: "", summary: "", danmaku: [], comments: [["待填写", ""], ["待填写", ""], ["不发表评论", ""]] }
       ];
       const ORD = ["一", "二", "三", "四", "五"];
       const state = { view: "title", level: 0, panel: "", choice: null, playing: false };
+
+      function asset(path) {
+        if (!path) return "";
+        var host = location.hostname;
+        if (host === "localhost" || host === "127.0.0.1" || /\.github\.io$/.test(host)) return path;
+        return "https://cdn.jsdelivr.net/gh/tendokei421-eng/jianpanxia@main/docs/" + path;
+      }
 
       function el(html) {
         const root = document.createElement("div");
@@ -178,7 +189,7 @@
         app.append(root);
         const player = document.getElementById("player");
         if (level.video) {
-          player.innerHTML = `<div class="stage"><video id="vid" src="${level.video}" controls playsinline preload="metadata"></video><div class="danmaku" id="danmaku"></div><button class="red-play" id="play" aria-label="播放">▶</button></div>`;
+          player.innerHTML = `<div class="stage"><video id="vid" src="${asset(level.video)}" controls playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="false" preload="auto"></video><div class="danmaku" id="danmaku"></div><button class="red-play" id="play" type="button" aria-label="播放">▶</button></div>`;
         } else {
           player.innerHTML = `<div class="blank"><div style="text-align:center"><div class="mark">留</div><p>画面留白</p></div></div>`;
         }
@@ -188,6 +199,7 @@
         document.getElementById("follow").onclick = () => openFollow();
         const vid = document.getElementById("vid");
         if (vid) bindVideo(vid, level, posted);
+        drawDanmaku(document.getElementById("danmaku"), level.danmaku, posted, false);
         if (state.panel === "summary") openSheet("内容总结", level.summary || "此视频的内容总结留白。");
         if (state.panel === "comments") openComments(level);
         if (state.panel === "follow") openFollow();
@@ -204,8 +216,17 @@
         play.onclick = () => {
           if (vid.ended) vid.currentTime = 0;
           const job = vid.paused ? vid.play() : vid.pause();
-          if (job && job.catch) job.catch(() => {});
+          if (job && job.catch) job.catch(() => { vid.setAttribute("data-error", "1"); });
         };
+        vid.addEventListener("error", () => {
+          if (!document.getElementById("vid-error")) {
+            const note = document.createElement("p");
+            note.id = "vid-error";
+            note.style.cssText = "color:#fff;text-align:center;padding:0.5rem;margin:0";
+            note.textContent = "视频没有加载上";
+            vid.parentElement.append(note);
+          }
+        });
         vid.addEventListener("play", sync);
         vid.addEventListener("pause", sync);
         vid.addEventListener("ended", sync);
@@ -213,29 +234,29 @@
       }
 
       function drawDanmaku(layer, lines, posted, playing) {
+        if (!layer) return;
         layer.replaceChildren();
-        if (!playing && posted) {
-          const hold = document.createElement("p");
-          hold.className = "hold";
-          hold.textContent = posted;
-          layer.append(hold);
-        }
-        if (!playing) return;
-        lines.forEach((text, i) => {
+        (lines || []).forEach((text, i) => {
           const span = document.createElement("span");
           span.className = "fly";
           span.textContent = text;
           span.style.marginTop = (4 + (i % 7) * 11) + "%";
-          span.style.animationDelay = (-i * 0.85) + "s";
+          span.style.animationDelay = (-i * 0.7) + "s";
           layer.append(span);
         });
-        if (posted) {
-          const mine = document.createElement("span");
-          mine.className = "fly mine";
-          mine.textContent = posted;
-          mine.style.marginTop = "18%";
-          layer.append(mine);
+        if (!posted) return;
+        if (!playing) {
+          const hold = document.createElement("p");
+          hold.className = "hold";
+          hold.textContent = posted;
+          layer.append(hold);
+          return;
         }
+        const mine = document.createElement("span");
+        mine.className = "fly mine";
+        mine.textContent = posted;
+        mine.style.marginTop = "18%";
+        layer.append(mine);
       }
 
       function openSheet(title, body) {
@@ -270,7 +291,7 @@
         const level = LEVELS[state.level];
         const prev = state.level === 0 ? "" : `<button class="ghost-btn" id="prev">上一关</button>`;
         const next = state.level < LEVELS.length - 1 ? `<button class="seal-btn wide" id="next">下一关</button>` : `<button class="seal-btn wide" id="next">回到开场</button>`;
-        const video = level.followVideo ? `<video id="follow-vid" src="${level.followVideo}" controls autoplay playsinline style="width:100%;max-height:20rem;background:#111;margin:0.75rem 0"></video>` : "";
+        const video = level.followVideo ? `<video id="follow-vid" src="${asset(level.followVideo)}" controls autoplay playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="false" style="width:100%;max-height:20rem;background:#111;margin:0.75rem 0"></video>` : "";
         const copy = level.follow || `第 ${state.level + 1} 关的后续留白。`;
         const sheet = el(`<div class="sheet" id="sheet"><div class="card"><div style="display:flex;justify-content:space-between"><strong>后续</strong><button id="close" style="border:0;background:none;font-size:1.25rem">×</button></div>${video}<p>${copy}</p><div class="${state.level === 0 ? "" : "grid2"}" style="margin-top:1rem">${prev}${next}</div></div></div>`);
         document.body.append(sheet);
