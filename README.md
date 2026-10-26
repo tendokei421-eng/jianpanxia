@@ -2,7 +2,7 @@
 
 可以直接打开使用：
 
-<https://spot-brisket-jn162.ship.place/>
+<https://regal-subject-6ljo5.ship.place/>
 
 看一条视频，读内容总结，在评论里选一条。白底，红印。
 

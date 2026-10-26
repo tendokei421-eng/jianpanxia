@@ -37,14 +37,12 @@
 
 .player-frame {
   position: relative;
-  height: min(52dvh, 28rem);
-  width: min(100%, calc(min(52dvh, 28rem) * 9 / 16));
+  aspect-ratio: 9 / 16;
+  width: min(92vw, 22rem);
   margin-inline: auto;
   overflow: hidden;
   background: #111;
   transform: translateZ(0);
-  -webkit-mask-image: -webkit-radial-gradient(circle, #fff 100%, #000 100%);
-  mask-image: radial-gradient(circle, #fff 100%, #000 100%);
 }
 
 .player-frame video {
@@ -66,13 +64,6 @@
   pointer-events: none;
 }
 
-@media (min-width: 640px) {
-  .player-frame {
-    height: auto;
-    width: min(24rem, 100%);
-    aspect-ratio: 9 / 16;
-  }
-}
 @keyframes danmaku-fly {
   from {
     transform: translate3d(0, 0, 0);

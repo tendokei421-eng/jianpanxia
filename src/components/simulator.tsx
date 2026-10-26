@@ -179,7 +179,7 @@ function FollowPlayer({ src }: { src: string }) {
       autoPlay
       playsInline
       preload="auto"
-      className="mx-auto mb-4 max-h-64 w-full bg-ink object-contain sm:max-h-80"
+      className="mx-auto mb-4 aspect-[9/16] w-full max-w-xs bg-ink object-contain"
     />
   );
 }
