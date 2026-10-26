@@ -2,7 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>键盘侠模拟器</title>
     <style>
       :root {
@@ -14,27 +14,30 @@
         --seal: #c8102e;
       }
       * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
       body {
         margin: 0;
         background: var(--paper);
         color: var(--ink);
+        overflow-x: clip;
         font-family: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
       }
       button, a { font: inherit; }
       button { cursor: pointer; }
       .bar { height: 4px; background: var(--seal); }
-      .wrap { max-width: 48rem; margin: 0 auto; padding: 1rem 1rem 6rem; }
-      h1 { font-family: "Songti SC", "Noto Serif SC", serif; font-weight: 650; }
+      .wrap { max-width: 32rem; margin: 0 auto; padding: 0.75rem 1rem calc(5.75rem + env(safe-area-inset-bottom)); }
+      h1 { font-family: "Songti SC", "Noto Serif SC", serif; font-weight: 650; font-size: clamp(1.35rem, 5vw, 1.75rem); line-height: 1.35; margin: 1rem 0 0; }
       .screen { min-height: 100dvh; display: flex; flex-direction: column; }
-      .hero { flex: 1; display: grid; place-items: center; text-align: left; padding: 2rem 1rem; }
+      .hero { flex: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom)); }
       .seal-btn, .ghost-btn, .red-play {
         display: inline-flex; align-items: center; justify-content: center;
-        min-height: 3rem; border: 0; text-decoration: none;
+        min-height: 3rem; border: 0; text-decoration: none; font-size: 1rem;
       }
-      .seal-btn { background: var(--seal); color: var(--surface); padding: 0 2.5rem; }
+      .seal-btn { background: var(--seal); color: var(--surface); }
+      .wide { width: 100%; min-height: 3.5rem; }
       .ghost-btn { background: var(--surface); color: var(--ink); border: 1px solid var(--ink); }
-      .player { max-width: 24rem; margin: 0 auto; border: 1px solid var(--rule); background: var(--surface); }
-      .stage { position: relative; aspect-ratio: 9/16; background: #111; overflow: hidden; }
+      .player { width: fit-content; max-width: 100%; margin: 0 auto; border: 1px solid var(--rule); background: var(--surface); }
+      .stage { position: relative; height: min(58dvh, 32rem); width: min(100%, calc(min(58dvh, 32rem) * 9 / 16)); aspect-ratio: 9/16; max-width: 100%; background: #111; overflow: hidden; }
       video { width: 100%; height: 100%; object-fit: contain; background: #111; display: block; }
       .red-play {
         position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -52,7 +55,7 @@
         border: 2px solid #fff; background: rgb(0 0 0 / 0.72); padding: 0.15rem 0.45rem;
       }
       .hold {
-        position: absolute; top: 3rem; left: 0.75rem; right: 0.75rem; z-index: 4;
+        position: absolute; top: 2.5rem; left: 0.6rem; right: 0.6rem; z-index: 4;
         border: 2px solid #fff; background: rgb(0 0 0 / 0.72); color: #fff;
         padding: 0.35rem 0.5rem; font-size: 0.9rem; line-height: 1.45;
       }
@@ -64,24 +67,39 @@
         width: 4rem; height: 4rem; display: grid; place-items: center;
         border: 2px solid var(--seal); color: var(--seal); font-family: "Songti SC", serif; font-size: 1.5rem;
       }
-      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1.25rem; }
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem; }
+      .topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; padding: 0.75rem 1rem 0; max-width: 32rem; margin: 0 auto; }
       .follow {
-        position: fixed; right: 1rem; bottom: 1rem; z-index: 20;
-        border: 1px solid var(--seal); background: #fff; color: var(--seal);
-        min-height: 3rem; padding: 0 1rem;
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+        width: 100%; min-height: 3.25rem;
+        border: 0; border-top: 1px solid var(--rule);
+        background: var(--paper); color: var(--seal);
+        padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+      }
+      .follow span {
+        display: flex; align-items: center; justify-content: center;
+        height: 3rem; border: 1px solid var(--seal); background: #fff;
       }
       .sheet {
         position: fixed; inset: 0; z-index: 40; background: rgb(0 0 0 / 0.35);
         display: grid; align-items: end;
       }
-      .card { background: #fff; padding: 1rem 1rem 1.5rem; max-height: 80dvh; overflow: auto; }
+      .card {
+        background: #fff; width: 100%;
+        padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+        max-height: 88dvh; overflow: auto;
+      }
       .opt {
         display: block; width: 100%; text-align: left; background: #fff;
-        border: 1px solid var(--rule); padding: 0.75rem 1rem; margin-top: 0.75rem;
+        border: 1px solid var(--rule); padding: 0.85rem 1rem; margin-top: 0.75rem;
+        min-height: 3.25rem;
       }
-      .opt small { color: var(--seal); display: block; }
+      .opt small { color: var(--seal); display: block; margin-bottom: 0.2rem; }
       .muted { color: var(--mute); }
       .hidden { display: none !important; }
+      @media (min-width: 640px) {
+        .stage { height: auto; width: min(24rem, 100%); aspect-ratio: 9/16; }
+      }
     </style>
   </head>
   <body>
@@ -124,9 +142,9 @@
               <div class="hero">
                 <div>
                   <p class="muted">闯关演示</p>
-                  <h1 style="font-size:2.4rem;margin:0.5rem 0">键盘侠模拟器</h1>
+                  <h1 style="font-size:2rem;margin:0.5rem 0">键盘侠模拟器</h1>
                   <p class="muted">一部视频，两个按钮，一次选择。</p>
-                  <button class="seal-btn" id="start" style="margin-top:1.5rem">开始</button>
+                  <button class="seal-btn wide" id="start" style="margin-top:1.5rem">开始</button>
                 </div>
               </div>
             </main>`));
@@ -138,7 +156,7 @@
         const root = el(`
           <main>
             <div class="bar"></div>
-            <header class="wrap" style="display:flex;justify-content:space-between;padding-bottom:0">
+            <header class="topbar">
               <div>
                 <strong>键盘侠模拟器</strong>
                 <p class="muted" style="margin:0.25rem 0 0">第 ${state.level + 1} 关 / 共 ${LEVELS.length} 关</p>
@@ -155,7 +173,7 @@
               </div>
               ${state.choice == null ? "" : `<p class="muted">本关选择 <span style="color:var(--ink)">${level.comments[state.choice][0]}</span></p>`}
             </div>
-            <button class="follow" id="follow">查看后续</button>
+            <button class="follow" id="follow"><span>查看后续</span></button>
           </main>`);
         app.append(root);
         const player = document.getElementById("player");
@@ -251,7 +269,7 @@
         closeSheet();
         const level = LEVELS[state.level];
         const prev = state.level === 0 ? "" : `<button class="ghost-btn" id="prev">上一关</button>`;
-        const next = state.level < LEVELS.length - 1 ? `<button class="seal-btn" id="next">下一关</button>` : `<button class="seal-btn" id="next">回到开场</button>`;
+        const next = state.level < LEVELS.length - 1 ? `<button class="seal-btn wide" id="next">下一关</button>` : `<button class="seal-btn wide" id="next">回到开场</button>`;
         const video = level.followVideo ? `<video id="follow-vid" src="${level.followVideo}" controls autoplay playsinline style="width:100%;max-height:20rem;background:#111;margin:0.75rem 0"></video>` : "";
         const copy = level.follow || `第 ${state.level + 1} 关的后续留白。`;
         const sheet = el(`<div class="sheet" id="sheet"><div class="card"><div style="display:flex;justify-content:space-between"><strong>后续</strong><button id="close" style="border:0;background:none;font-size:1.25rem">×</button></div>${video}<p>${copy}</p><div class="${state.level === 0 ? "" : "grid2"}" style="margin-top:1rem">${prev}${next}</div></div></div>`);

@@ -16,6 +16,7 @@
   body {
     background: var(--color-paper);
     color: var(--color-ink);
+    overflow-x: clip;
   }
 
   button:not(:disabled),
@@ -34,6 +35,18 @@
   }
 }
 
+.player-frame {
+  height: min(58dvh, 32rem);
+  width: min(100%, calc(min(58dvh, 32rem) * 9 / 16));
+  aspect-ratio: 9 / 16;
+}
+
+@media (min-width: 640px) {
+  .player-frame {
+    height: auto;
+    width: min(24rem, 100%);
+  }
+}
 @keyframes danmaku-fly {
   from {
     transform: translate3d(0, 0, 0);

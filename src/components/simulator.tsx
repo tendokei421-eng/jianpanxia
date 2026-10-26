@@ -67,13 +67,13 @@ function Sheet({
   }, [closeHref]);
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center p-4 sm:items-center">
+    <div className="fixed inset-0 z-40 flex items-end justify-center sm:items-center sm:p-4">
       <a href={closeHref} aria-label="关闭弹层" className="absolute inset-0 bg-ink/40" />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative z-10 flex w-full max-w-lg flex-col border border-rule bg-surface"
+        className="relative z-10 flex max-h-[92dvh] w-full max-w-lg flex-col border border-rule bg-surface pb-[env(safe-area-inset-bottom)]"
       >
         <header className="flex items-center justify-between border-b border-rule px-4 py-3">
           <h2 id={titleId} className="font-display text-xl text-ink">
@@ -182,7 +182,7 @@ function FollowPlayer({ src }: { src: string }) {
       autoPlay
       playsInline
       preload="auto"
-      className="mx-auto mb-4 max-h-80 w-full bg-ink object-contain"
+      className="mx-auto mb-4 max-h-64 w-full bg-ink object-contain sm:max-h-80"
     />
   );
 }
@@ -292,8 +292,8 @@ function FilePlayer({
   const ratio = duration <= 0 ? 0 : time / duration;
 
   return (
-    <div className="mx-auto w-full max-w-sm border border-rule bg-surface">
-      <div className="relative isolate aspect-[9/16] bg-ink">
+    <div className="mx-auto w-fit max-w-full border border-rule bg-surface">
+      <div className="player-frame relative isolate bg-ink">
         <video
           ref={videoRef}
           src={resolved}
@@ -580,24 +580,24 @@ function TitleScreen() {
   return (
     <main className="flex min-h-dvh flex-col bg-paper text-ink">
       <div className="h-1 bg-seal" />
-      <div className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-between px-6 py-10">
+      <div className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-between px-5 pt-8 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
         <p className="text-sm text-mute">闯关演示</p>
         <div>
-          <div className="mb-8 grid size-14 place-items-center border-2 border-seal font-display text-2xl text-seal">
+          <div className="mb-6 grid size-14 place-items-center border-2 border-seal font-display text-2xl text-seal">
             键
           </div>
-          <h1 className="font-display text-4xl leading-tight text-ink sm:text-5xl">键盘侠模拟器</h1>
-          <p className="mt-4 max-w-sm text-base leading-relaxed text-mute">
+          <h1 className="font-display text-[2rem] leading-tight text-ink sm:text-5xl">键盘侠模拟器</h1>
+          <p className="mt-4 text-base leading-relaxed text-mute">
             一部视频，两个按钮，一次选择。
           </p>
           <a
             href={stageHref(0)}
-            className="mt-8 inline-flex h-12 items-center bg-seal px-10 text-base text-surface"
+            className="mt-8 flex h-14 w-full items-center justify-center bg-seal text-base text-surface"
           >
             开始
           </a>
         </div>
-        <p className="max-w-sm text-sm leading-relaxed text-mute">
+        <p className="mt-10 text-sm leading-relaxed text-mute">
           没写明的标题、画面、总结、评论和后续都先留白，之后可以直接补上。
         </p>
       </div>
@@ -624,19 +624,19 @@ function StageScreen({
   return (
     <main className="min-h-dvh bg-paper text-ink">
       <div className="h-1 bg-seal" />
-      <header className="mx-auto flex w-full max-w-3xl items-start justify-between gap-4 px-4 py-4">
-        <div>
+      <header className="mx-auto flex w-full max-w-lg items-start justify-between gap-3 px-4 pt-3 pb-2">
+        <div className="min-w-0">
           <p className="font-display text-lg text-ink">键盘侠模拟器</p>
           <p className="mt-1 text-sm text-mute">
             第 {index + 1} 关 / 共 {total} 关
           </p>
         </div>
-        <a href="?" className="inline-flex h-11 items-center px-2 text-sm text-mute">
+        <a href="?" className="inline-flex h-11 shrink-0 items-center px-2 text-sm text-mute">
           回到开场
         </a>
       </header>
 
-      <div className="mx-auto w-full max-w-3xl px-4 pb-28">
+      <div className="mx-auto w-full max-w-lg px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
         <VideoPlayer
           key={level.id}
           durationSec={level.durationSec}
@@ -646,38 +646,40 @@ function StageScreen({
           mine={posted}
         />
 
-        <h1 className="mt-5 font-display text-2xl text-ink">{level.title.trim() || `第 ${index + 1} 关`}</h1>
+        <h1 className="mt-4 font-display text-xl leading-snug text-ink sm:text-2xl">{level.title.trim() || `第 ${index + 1} 关`}</h1>
         {!level.title.trim() ? <p className="mt-1 text-sm text-mute">视频标题留白</p> : null}
 
-        <div className="mt-5 grid grid-cols-2 gap-3">
+        <div className="mt-4 grid grid-cols-2 gap-3">
           <a
             href={stageHref(index, "summary", choiceId)}
-            className="inline-flex h-12 w-full items-center justify-center border border-ink bg-surface text-ink"
+            className="inline-flex h-12 w-full items-center justify-center border border-ink bg-surface text-base text-ink"
           >
             内容总结
           </a>
           <a
             href={stageHref(index, "comments", choiceId)}
-            className="inline-flex h-12 w-full items-center justify-center bg-seal text-surface"
+            className="inline-flex h-12 w-full items-center justify-center bg-seal text-base text-surface"
           >
             发表评论
           </a>
         </div>
 
         {selected ? (
-          <p className="mt-4 text-sm text-mute">
+          <p className="mt-4 text-sm leading-relaxed text-mute">
             本关选择
-            <span className="ml-2 text-ink">{optionLabel(selected).text}</span>
+            <span className="mt-1 block text-base text-ink">{optionLabel(selected).text}</span>
           </p>
         ) : null}
       </div>
 
-      <a
-        href={stageHref(index, "follow", choiceId)}
-        className="fixed right-4 bottom-4 z-30 inline-flex h-12 items-center border border-seal bg-surface px-4 text-seal"
-      >
-        查看后续
-      </a>
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-rule bg-paper px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <a
+          href={stageHref(index, "follow", choiceId)}
+          className="flex h-12 w-full items-center justify-center border border-seal bg-surface text-base text-seal"
+        >
+          查看后续
+        </a>
+      </div>
 
       {panel === "summary" ? (
         <Sheet title="内容总结" level={index} choice={choiceId}>
