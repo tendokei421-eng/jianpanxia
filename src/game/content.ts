@@ -141,7 +141,9 @@ export const LEVELS: Level[] = [
       },
       { id: "l2-skip", text: "不发表任何评论", abstain: true, outcome: "" },
     ],
-    followUp: "",
+    followUp:
+      "经证实，刘奶奶73岁，确为视力一级残疾，使用的是装有读屏功能的手机，通过语音反馈操作，并非“看得见却装盲”。拍摄者随后道歉，承认对盲人的理解太片面。“盲人不可能用手机”本身就是未经调查的预设；调查研究要用一手事实打断“想当然”的链条。注意，“专挑女性”是拍摄者的单方面描述，不是经核实的事实。",
+    followVideo: "/videos/level-2-follow.mp4",
   },
   {
     id: "level-3",
