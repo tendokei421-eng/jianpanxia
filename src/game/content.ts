@@ -47,8 +47,10 @@ export type Level = {
   /** 笔记的赞、收藏。 */
   likes?: number;
   saves?: number;
-  /** 笔记下可滑动的评论。 */
+  /** 笔记或报道下可滑动的评论。 */
   replies?: NoteReply[];
+  /** 有配图时，开场不放播放器，改成新闻图文。 */
+  image?: string;
 };
 
 export const LEVELS: Level[] = [
@@ -147,17 +149,45 @@ export const LEVELS: Level[] = [
   },
   {
     id: "level-3",
-    title: "",
+    title: "家园被毁！湖南石门县两位基层村支书忍不住哭了！",
     durationSec: 30,
     captions: [],
     summary: "",
     danmaku: [],
-    comments: [
-      { id: "l3-a", text: "", outcome: "" },
-      { id: "l3-b", text: "", outcome: "" },
-      { id: "l3-skip", text: "不发表评论", abstain: true, outcome: "" },
+    image: "/images/level-3.png",
+    likes: 7436,
+    saves: 3182,
+    replies: [
+      { name: "看图说话", text: "这金耳环一看就是别人送的，基层干部哪买得起。" },
+      { name: "路过石门", text: "来历不说清就是收的礼，哭也没用。" },
+      { name: "围观群众", text: "这么粗的金圈，不是工资买得起的。" },
+      { name: "不信泪", text: "先别哭，把耳环是谁送的交代清楚。" },
+      { name: "先核对", text: "耳环的来历不能靠画面猜。材质、价格和购买记录都还没核实，不能据此否定她在灾区的工作。" },
     ],
-    followUp: "",
+    comments: [
+      {
+        id: "l3-a",
+        text: "跟随大部分人的看法",
+        posted: "金耳环来历不明，不像自己买的。",
+        outcome: "",
+      },
+      {
+        id: "l3-b",
+        text: "故意和评论风向反着来",
+        posted: "耳环来历不明不等于受贿，别跟着定罪。",
+        outcome: "",
+      },
+      {
+        id: "l3-c",
+        text: "先独立思考再发表评论",
+        posted: "现在只能看到她戴了耳环，来历还没核实，不能按贪腐下结论。",
+        outcome: "",
+      },
+      { id: "l3-skip", text: "不发表任何评论", abstain: true, outcome: "" },
+    ],
+    followUp:
+      "实际情况是，湖南石门县龙池河村支书向金元连续多日奋战在防汛一线，全村927人零伤亡；被质疑的耳环网购不到100元。2026年6月，公安部网安局披露依法查处网暴行为15起，对相关人员进行行政处罚。坐在屏幕前仅凭一副耳环否定基层干部在洪水中的全部付出，正是缺乏调查研究、以碎片表象审判基层的典型表现。",
+    followVideo: "/videos/level-3-follow.mp4",
   },
 ];
 

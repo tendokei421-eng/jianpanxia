@@ -590,14 +590,12 @@ function TitleScreen() {
   );
 }
 
-function NoteCard({
-  text,
+function CommentThread({
   likes,
   saves,
   replies,
   mine,
 }: {
-  text: string;
   likes?: number;
   saves?: number;
   replies?: { name: string; text: string }[];
@@ -607,16 +605,7 @@ function NoteCard({
   const mineText = mine?.trim() ?? "";
   const count = thread.length + (mineText ? 1 : 0);
   return (
-    <article className="border border-rule bg-surface">
-      <header className="flex items-center gap-3 px-4 py-3">
-        <div className="grid size-11 shrink-0 place-items-center rounded-full bg-seal text-base text-surface">某</div>
-        <div className="min-w-0 flex-1">
-          <p className="text-base text-ink">某用户</p>
-          <p className="text-xs text-mute">笔记</p>
-        </div>
-        <span className="inline-flex h-8 items-center border border-seal px-3 text-sm text-seal">关注</span>
-      </header>
-      <p className="px-4 pb-4 text-base leading-relaxed whitespace-pre-wrap text-ink">{text}</p>
+    <>
       <div className="flex gap-5 border-t border-rule px-4 py-3 text-sm text-ink">
         <span>赞 {likes ?? 0}</span>
         <span>收藏 {saves ?? 0}</span>
@@ -640,6 +629,67 @@ function NoteCard({
           </ul>
         </div>
       ) : null}
+    </>
+  );
+}
+
+function NoteCard({
+  text,
+  likes,
+  saves,
+  replies,
+  mine,
+}: {
+  text: string;
+  likes?: number;
+  saves?: number;
+  replies?: { name: string; text: string }[];
+  mine?: string;
+}) {
+  return (
+    <article className="border border-rule bg-surface">
+      <header className="flex items-center gap-3 px-4 py-3">
+        <div className="grid size-11 shrink-0 place-items-center rounded-full bg-seal text-base text-surface">某</div>
+        <div className="min-w-0 flex-1">
+          <p className="text-base text-ink">某用户</p>
+          <p className="text-xs text-mute">笔记</p>
+        </div>
+        <span className="inline-flex h-8 items-center border border-seal px-3 text-sm text-seal">关注</span>
+      </header>
+      <p className="px-4 pb-4 text-base leading-relaxed whitespace-pre-wrap text-ink">{text}</p>
+      <CommentThread likes={likes} saves={saves} replies={replies} mine={mine} />
+    </article>
+  );
+}
+
+function NewsCard({
+  headline,
+  image,
+  likes,
+  saves,
+  replies,
+  mine,
+}: {
+  headline: string;
+  image: string;
+  likes?: number;
+  saves?: number;
+  replies?: { name: string; text: string }[];
+  mine?: string;
+}) {
+  const [src, setSrc] = useState(image.replace(/^\//, ""));
+  useEffect(() => {
+    setSrc(resolveMedia(image));
+  }, [image]);
+  return (
+    <article className="border border-rule bg-surface">
+      <header className="flex items-center justify-between border-b border-rule px-4 py-2">
+        <p className="font-display text-base text-seal">要闻</p>
+        <p className="text-xs text-mute">社会</p>
+      </header>
+      <h2 className="px-4 pt-4 font-display text-xl leading-snug text-ink">{headline}</h2>
+      <img src={src} alt={headline} className="mt-3 block w-full" />
+      <CommentThread likes={likes} saves={saves} replies={replies} mine={mine} />
     </article>
   );
 }
@@ -678,6 +728,15 @@ function StageScreen({
       <div className="mx-auto w-full max-w-lg px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
         {level.note?.trim() ? (
           <NoteCard text={level.note} likes={level.likes} saves={level.saves} replies={level.replies} mine={posted} />
+        ) : level.image ? (
+          <NewsCard
+            headline={level.title.trim() || `第 ${index + 1} 关`}
+            image={level.image}
+            likes={level.likes}
+            saves={level.saves}
+            replies={level.replies}
+            mine={posted}
+          />
         ) : (
           <VideoPlayer
             key={level.id}
@@ -689,7 +748,7 @@ function StageScreen({
           />
         )}
 
-        {level.note?.trim() ? null : (
+        {level.note?.trim() || level.image ? null : (
           <>
             <h1 className="mt-4 font-display text-xl leading-snug text-ink sm:text-2xl">
               {level.title.trim() || `第 ${index + 1} 关`}
@@ -737,7 +796,7 @@ function StageScreen({
           {level.summary.trim() ? (
             <p className="text-base leading-relaxed whitespace-pre-wrap text-ink">{level.summary}</p>
           ) : (
-            <Blank hint={level.note?.trim() ? "这篇笔记的内容总结留白。" : "此视频的内容总结留白。"} />
+            <Blank hint={level.image ? "这篇报道的内容总结留白。" : level.note?.trim() ? "这篇笔记的内容总结留白。" : "此视频的内容总结留白。"} />
           )}
         </Sheet>
       ) : null}

@@ -77,6 +77,12 @@
       .reply.mine { border-bottom-color: var(--seal); background: var(--paper); }
       .reply.mine small { color: var(--seal); }
       .reply p { margin: 0.25rem 0 0; line-height: 1.6; }
+      .player.full { width: 100%; border: 0; background: transparent; }
+      .news { border: 1px solid var(--rule); background: #fff; }
+      .news-kicker { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--rule); padding: 0.6rem 1rem; }
+      .news-kicker strong { color: var(--seal); font-family: "Songti SC", "Noto Serif SC", serif; font-weight: 650; }
+      .news h2 { margin: 0; padding: 1rem 1rem 0; font-family: "Songti SC", "Noto Serif SC", serif; font-size: 1.25rem; line-height: 1.4; }
+      .news img { display: block; width: 100%; height: auto; margin-top: 0.75rem; }
       .blank {
         aspect-ratio: 16/9; display: grid; place-items: center; background: #111; color: #fff;
       }
@@ -158,7 +164,24 @@
           follow: "经证实，刘奶奶73岁，确为视力一级残疾，使用的是装有读屏功能的手机，通过语音反馈操作，并非“看得见却装盲”。拍摄者随后道歉，承认对盲人的理解太片面。“盲人不可能用手机”本身就是未经调查的预设；调查研究要用一手事实打断“想当然”的链条。注意，“专挑女性”是拍摄者的单方面描述，不是经核实的事实。",
           followVideo: "videos/level-2-follow.mp4"
         },
-        { title: "", video: "", summary: "", danmaku: [], comments: [["待填写", ""], ["待填写", ""], ["不发表评论", ""]] }
+        { title: "家园被毁！湖南石门县两位基层村支书忍不住哭了！", video: "", image: "images/level-3.png", likes: 7436, saves: 3182,
+          replies: [
+            ["看图说话", "这金耳环一看就是别人送的，基层干部哪买得起。"],
+            ["路过石门", "来历不说清就是收的礼，哭也没用。"],
+            ["围观群众", "这么粗的金圈，不是工资买得起的。"],
+            ["不信泪", "先别哭，把耳环是谁送的交代清楚。"],
+            ["先核对", "耳环的来历不能靠画面猜。材质、价格和购买记录都还没核实，不能据此否定她在灾区的工作。"]
+          ],
+          summary: "", danmaku: [],
+          comments: [
+            ["跟随大部分人的看法", "金耳环来历不明，不像自己买的。"],
+            ["故意和评论风向反着来", "耳环来历不明不等于受贿，别跟着定罪。"],
+            ["先独立思考再发表评论", "现在只能看到她戴了耳环，来历还没核实，不能按贪腐下结论。"],
+            ["不发表任何评论", ""]
+          ],
+          follow: "实际情况是，湖南石门县龙池河村支书向金元连续多日奋战在防汛一线，全村927人零伤亡；被质疑的耳环网购不到100元。2026年6月，公安部网安局披露依法查处网暴行为15起，对相关人员进行行政处罚。坐在屏幕前仅凭一副耳环否定基层干部在洪水中的全部付出，正是缺乏调查研究、以碎片表象审判基层的典型表现。",
+          followVideo: "videos/level-3-follow.mp4"
+        }
       ];
       const ORD = ["一", "二", "三", "四", "五"];
       const state = { view: "title", level: 0, panel: "", choice: null, playing: false };
@@ -202,7 +225,7 @@
             </header>
             <div class="wrap">
               <div class="player" id="player"></div>
-              ${level.note ? "" : `<h1 style="font-size:1.5rem">${level.title || "第 " + (state.level + 1) + " 关"}</h1>${level.title ? "" : '<p class="muted">视频标题留白</p>'}`}
+              ${level.note || level.image ? "" : `<h1 style="font-size:1.5rem">${level.title || "第 " + (state.level + 1) + " 关"}</h1>${level.title ? "" : '<p class="muted">视频标题留白</p>'}`}
               <div class="${state.level === 1 ? "" : "grid2"}">
                 ${state.level === 1 ? "" : '<button class="ghost-btn" id="summary">内容总结</button>'}
                 <button class="seal-btn${state.level === 1 ? " wide" : ""}" id="comment">发表评论</button>
@@ -213,7 +236,13 @@
           </main>`);
         app.append(root);
         const player = document.getElementById("player");
-        if (level.note) {
+        player.classList.toggle("full", Boolean(level.image));
+        if (level.image) {
+          const replies = (level.replies || []).map((item) => `<div class="reply"><small>${item[0]}</small><p>${item[1]}</p></div>`).join("");
+          const mine = posted ? `<div class="reply mine"><small>我</small><p>${posted}</p></div>` : "";
+          const count = (level.replies || []).length + (posted ? 1 : 0);
+          player.innerHTML = `<article class="news"><header class="news-kicker"><strong>要闻</strong><span class="muted">社会</span></header><h2>${level.title}</h2><img src="${level.image}" alt="${level.title}"><div class="note-acts"><span>赞 ${level.likes || 0}</span><span>收藏 ${level.saves || 0}</span><span>评论 ${count}</span></div><div class="note-replies">${mine}${replies}</div></article>`;
+        } else if (level.note) {
           const replies = (level.replies || []).map((item) => `<div class="reply"><small>${item[0]}</small><p>${item[1]}</p></div>`).join("");
           const mine = posted ? `<div class="reply mine"><small>我</small><p>${posted}</p></div>` : "";
           const count = (level.replies || []).length + (posted ? 1 : 0);
@@ -225,13 +254,14 @@
         }
         document.getElementById("home").onclick = () => { state.view = "title"; render(); };
         const summary = document.getElementById("summary");
-        if (summary) summary.onclick = () => openSheet("内容总结", level.summary || "此视频的内容总结留白。");
+        const summaryText = level.summary || (level.image ? "这篇报道的内容总结留白。" : level.note ? "这篇笔记的内容总结留白。" : "此视频的内容总结留白。");
+        if (summary) summary.onclick = () => openSheet("内容总结", summaryText);
         document.getElementById("comment").onclick = () => openComments(level);
         document.getElementById("follow").onclick = () => openFollow();
         const vid = document.getElementById("vid");
         if (vid) bindVideo(vid, level, posted);
         else drawDanmaku(document.getElementById("danmaku"), level.danmaku, posted, false);
-        if (state.panel === "summary" && state.level !== 1) openSheet("内容总结", level.summary || "此视频的内容总结留白。");
+        if (state.panel === "summary" && state.level !== 1) openSheet("内容总结", summaryText);
         if (state.panel === "comments") openComments(level);
         if (state.panel === "follow") openFollow();
       }
