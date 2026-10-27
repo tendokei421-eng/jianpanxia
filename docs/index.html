@@ -74,6 +74,8 @@
       .note-replies { max-height: 13rem; overflow-y: auto; border-top: 1px solid var(--rule); }
       .reply { padding: 0.75rem 1rem; border-bottom: 1px solid var(--rule); }
       .reply small { color: var(--mute); display: block; }
+      .reply.mine { border-bottom-color: var(--seal); background: var(--paper); }
+      .reply.mine small { color: var(--seal); }
       .reply p { margin: 0.25rem 0 0; line-height: 1.6; }
       .blank {
         aspect-ratio: 16/9; display: grid; place-items: center; background: #111; color: #fff;
@@ -147,7 +149,12 @@
           ],
           summary: "",
           danmaku: [],
-          comments: [["待填写", ""], ["待填写", ""], ["不发表评论", ""]],
+          comments: [
+            ["跟随大部分人的看法", "能看手机就是装瞎，这就是拐卖。"],
+            ["故意和评论风向反着来", "看手机不等于拐人，别跟着认定。"],
+            ["先独立思考再发表评论", "现在只能说她不是全盲，还不能按拐卖下结论，先交给派出所核实。"],
+            ["不发表任何评论", ""]
+          ],
           follow: ""
         },
         { title: "", video: "", summary: "", danmaku: [], comments: [["待填写", ""], ["待填写", ""], ["不发表评论", ""]] }
@@ -206,7 +213,10 @@
         app.append(root);
         const player = document.getElementById("player");
         if (level.note) {
-          player.innerHTML = `<article class="note"><header class="note-head"><div class="avatar">某</div><div style="flex:1"><strong>某用户</strong><p class="muted" style="padding:0;margin:0.15rem 0 0">笔记</p></div><span class="follow-chip">关注</span></header><p class="note-body">${level.note}</p><div class="note-acts"><span>赞 ${level.likes || 0}</span><span>收藏 ${level.saves || 0}</span><span>评论 ${(level.replies || []).length}</span></div><div class="note-replies">${(level.replies || []).map((item) => `<div class="reply"><small>${item[0]}</small><p>${item[1]}</p></div>`).join("")}</div></article>`;
+          const replies = (level.replies || []).map((item) => `<div class="reply"><small>${item[0]}</small><p>${item[1]}</p></div>`).join("");
+          const mine = posted ? `<div class="reply mine"><small>我</small><p>${posted}</p></div>` : "";
+          const count = (level.replies || []).length + (posted ? 1 : 0);
+          player.innerHTML = `<article class="note"><header class="note-head"><div class="avatar">某</div><div style="flex:1"><strong>某用户</strong><p class="muted" style="padding:0;margin:0.15rem 0 0">笔记</p></div><span class="follow-chip">关注</span></header><p class="note-body">${level.note}</p><div class="note-acts"><span>赞 ${level.likes || 0}</span><span>收藏 ${level.saves || 0}</span><span>评论 ${count}</span></div><div class="note-replies">${mine}${replies}</div></article>`;
         } else if (level.video) {
           player.innerHTML = `<div class="stage" id="stage"><video id="vid" src="${level.video}" controls playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="false" preload="auto"></video><div class="danmaku" id="danmaku"></div></div><button class="playbar" id="play" type="button">播放</button>`;
         } else {

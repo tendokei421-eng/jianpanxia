@@ -595,13 +595,17 @@ function NoteCard({
   likes,
   saves,
   replies,
+  mine,
 }: {
   text: string;
   likes?: number;
   saves?: number;
   replies?: { name: string; text: string }[];
+  mine?: string;
 }) {
   const thread = replies ?? [];
+  const mineText = mine?.trim() ?? "";
+  const count = thread.length + (mineText ? 1 : 0);
   return (
     <article className="border border-rule bg-surface">
       <header className="flex items-center gap-3 px-4 py-3">
@@ -616,11 +620,17 @@ function NoteCard({
       <div className="flex gap-5 border-t border-rule px-4 py-3 text-sm text-ink">
         <span>赞 {likes ?? 0}</span>
         <span>收藏 {saves ?? 0}</span>
-        <span className="text-mute">评论 {thread.length}</span>
+        <span className="text-mute">评论 {count}</span>
       </div>
-      {thread.length > 0 ? (
+      {count > 0 ? (
         <div className="max-h-52 overflow-y-auto border-t border-rule">
           <ul>
+            {mineText ? (
+              <li className="border-b border-seal bg-paper px-4 py-3">
+                <p className="text-xs text-seal">我</p>
+                <p className="mt-1 text-base leading-relaxed text-ink">{mineText}</p>
+              </li>
+            ) : null}
             {thread.map((reply) => (
               <li key={reply.name} className="border-b border-rule px-4 py-3 last:border-b-0">
                 <p className="text-xs text-mute">{reply.name}</p>
@@ -667,7 +677,7 @@ function StageScreen({
 
       <div className="mx-auto w-full max-w-lg px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
         {level.note?.trim() ? (
-          <NoteCard text={level.note} likes={level.likes} saves={level.saves} replies={level.replies} />
+          <NoteCard text={level.note} likes={level.likes} saves={level.saves} replies={level.replies} mine={posted} />
         ) : (
           <VideoPlayer
             key={level.id}

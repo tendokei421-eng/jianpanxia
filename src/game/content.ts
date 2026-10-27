@@ -121,9 +121,25 @@ export const LEVELS: Level[] = [
       { name: "先问清楚", text: "能看手机只能说明她不是全盲，还不能认定是诱拐。先把经过问清，再交给派出所核实。" },
     ],
     comments: [
-      { id: "l2-a", text: "", outcome: "" },
-      { id: "l2-b", text: "", outcome: "" },
-      { id: "l2-skip", text: "不发表评论", abstain: true, outcome: "" },
+      {
+        id: "l2-a",
+        text: "跟随大部分人的看法",
+        posted: "能看手机就是装瞎，这就是拐卖。",
+        outcome: "",
+      },
+      {
+        id: "l2-b",
+        text: "故意和评论风向反着来",
+        posted: "看手机不等于拐人，别跟着认定。",
+        outcome: "",
+      },
+      {
+        id: "l2-c",
+        text: "先独立思考再发表评论",
+        posted: "现在只能说她不是全盲，还不能按拐卖下结论，先交给派出所核实。",
+        outcome: "",
+      },
+      { id: "l2-skip", text: "不发表任何评论", abstain: true, outcome: "" },
     ],
     followUp: "",
   },
