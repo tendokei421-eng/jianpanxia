@@ -182,9 +182,9 @@
             <div class="wrap">
               <div class="player" id="player"></div>
               ${level.note ? "" : `<h1 style="font-size:1.5rem">${level.title || "第 " + (state.level + 1) + " 关"}</h1>${level.title ? "" : '<p class="muted">视频标题留白</p>'}`}
-              <div class="grid2">
-                <button class="ghost-btn" id="summary">内容总结</button>
-                <button class="seal-btn" id="comment">发表评论</button>
+              <div class="${state.level === 1 ? "" : "grid2"}">
+                ${state.level === 1 ? "" : '<button class="ghost-btn" id="summary">内容总结</button>'}
+                <button class="seal-btn${state.level === 1 ? " wide" : ""}" id="comment">发表评论</button>
               </div>
               ${state.choice == null ? "" : `<p class="muted">本关选择 <span style="color:var(--ink)">${level.comments[state.choice][0]}</span></p>`}
             </div>
@@ -200,13 +200,14 @@
           player.innerHTML = `<div class="blank"><div style="text-align:center"><div class="mark">留</div><p>画面留白</p></div></div>`;
         }
         document.getElementById("home").onclick = () => { state.view = "title"; render(); };
-        document.getElementById("summary").onclick = () => openSheet("内容总结", level.summary || (level.note ? "这篇笔记的内容总结留白。" : "此视频的内容总结留白。"));
+        const summary = document.getElementById("summary");
+        if (summary) summary.onclick = () => openSheet("内容总结", level.summary || "此视频的内容总结留白。");
         document.getElementById("comment").onclick = () => openComments(level);
         document.getElementById("follow").onclick = () => openFollow();
         const vid = document.getElementById("vid");
         if (vid) bindVideo(vid, level, posted);
         else drawDanmaku(document.getElementById("danmaku"), level.danmaku, posted, false);
-        if (state.panel === "summary") openSheet("内容总结", level.summary || (level.note ? "这篇笔记的内容总结留白。" : "此视频的内容总结留白。"));
+        if (state.panel === "summary" && state.level !== 1) openSheet("内容总结", level.summary || "此视频的内容总结留白。");
         if (state.panel === "comments") openComments(level);
         if (state.panel === "follow") openFollow();
       }

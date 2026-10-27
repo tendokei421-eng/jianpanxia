@@ -665,13 +665,15 @@ function StageScreen({
           </>
         )}
 
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <a
-            href={stageHref(index, "summary", choiceId)}
-            className="inline-flex h-12 w-full items-center justify-center border border-ink bg-surface text-base text-ink"
-          >
-            内容总结
-          </a>
+        <div className={index === 1 ? "mt-4" : "mt-4 grid grid-cols-2 gap-3"}>
+          {index === 1 ? null : (
+            <a
+              href={stageHref(index, "summary", choiceId)}
+              className="inline-flex h-12 w-full items-center justify-center border border-ink bg-surface text-base text-ink"
+            >
+              内容总结
+            </a>
+          )}
           <a
             href={stageHref(index, "comments", choiceId)}
             className="inline-flex h-12 w-full items-center justify-center bg-seal text-base text-surface"
@@ -697,7 +699,7 @@ function StageScreen({
         </a>
       </div>
 
-      {panel === "summary" ? (
+      {panel === "summary" && index !== 1 ? (
         <Sheet title="内容总结" level={index} choice={choiceId}>
           {level.summary.trim() ? (
             <p className="text-base leading-relaxed whitespace-pre-wrap text-ink">{level.summary}</p>
