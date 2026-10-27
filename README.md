@@ -2,7 +2,7 @@
 
 可以直接打开使用：
 
-<https://candle-zipper-zc6kc.ship.place/>
+<https://desert-gecko-zeq9h.ship.place/>
 
 看一条视频，读内容总结，在评论里选一条。白底，红印。
 

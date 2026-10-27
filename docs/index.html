@@ -83,6 +83,8 @@
       .news-kicker strong { color: var(--seal); font-family: "Songti SC", "Noto Serif SC", serif; font-weight: 650; }
       .news h2 { margin: 0; padding: 1rem 1rem 0; font-family: "Songti SC", "Noto Serif SC", serif; font-size: 1.25rem; line-height: 1.4; }
       .news img { display: block; width: 100%; height: auto; margin-top: 0.75rem; }
+      .note img { display: block; width: 100%; height: auto; margin-top: 0.75rem; }
+      .post-body { margin: 0; padding: 1rem; line-height: 1.75; font-size: 1rem; white-space: pre-wrap; }
       .blank {
         aspect-ratio: 16/9; display: grid; place-items: center; background: #111; color: #fff;
       }
@@ -181,6 +183,32 @@
           ],
           follow: "实际情况是，湖南石门县龙池河村支书向金元连续多日奋战在防汛一线，全村927人零伤亡；被质疑的耳环网购不到100元。2026年6月，公安部网安局披露依法查处网暴行为15起，对相关人员进行行政处罚。坐在屏幕前仅凭一副耳环否定基层干部在洪水中的全部付出，正是缺乏调查研究、以碎片表象审判基层的典型表现。",
           followVideo: "videos/level-3-follow.mp4"
+        },
+        {
+          title: "姜萍：从走进决赛的那一刻起，她就已经赢了",
+          video: "",
+          image: "images/level-4.png",
+          post: "2024年6月，17岁中专生姜萍以第12名入围阿里巴巴全球数学竞赛预赛。消息一经传出，全网集中报道。一个在职业学校学服装设计的女生，闯进汇集名校学子的数学赛场，名次甚至压过不少本科生。“寒门天才”的标签迅速传开：没有奥数班，没有名校光环，只有一盏灯和一本本自学的习题。短发、校服，站在写着“知识改变命运”的墙前，她自己倒还笑得很安静。\n\n人们愿意把最亮的词送给她。天才、奇迹、逆袭，评论区几乎只用一种声音。这个故事干净，也励志。它好像在说，起点可以很低，但只要够努力，就有人把你的名字认真地念出来。对很多同样普通的学生来说，姜萍走进决赛，就像替他们走了一步。\n\n于是有了这样的标题：从走进决赛的那一刻起，她就已经赢了。赢的不只是一个名次，还有一种被看见的可能。中专不是终点，衣服和公式也可以放在同一个人身上。她让“寒门”不再只是被同情的词，而变成被鼓掌的出发。那些天，全网把光打在她身上，夸奖本身也成了一种庆祝：原来努力会被这么多人同时看见。",
+          likes: 8652,
+          saves: 4371,
+          replies: [
+            ["灯下做题", "中专女生杀进决赛，这就是寒门天才。"],
+            ["为她鼓掌", "从走进决赛起她就赢了，别的都不用问。"],
+            ["看哭了", "17岁第12名，努力真的会被看见。"],
+            ["深夜自习", "没有名校光环也能赢，姜萍值得全部的夸奖。"],
+            ["先核对", "预赛名次值得高兴，但辅导有没有越过规则、成绩怎么来的，还要等组委会核对，先别把人造成神。"]
+          ],
+          summary: "",
+          danmaku: [],
+          comments: [
+            ["跟随大部分人的看法", "寒门天才实至名归，从进决赛起她就赢了。"],
+            ["故意和评论风向反着来", "名次高不等于天才，别急着加冕。"],
+            ["先独立思考再发表评论", "预赛第12名值得关注，但成名太快，规则和过程还没核对，先别把人造成神。"],
+            ["不发表任何评论", ""]
+          ],
+          follow: "2024年11月3日，竞赛组委会公布调查结果：教师王某某在预选赛中对其指导的学生提供帮助，违反“禁止与他人讨论”的规则，二人决赛未获奖；王某某被诫勉谈话、取消本年度评先评优资格。事件从“全网造神”反转为“全网祛魅”。前面案例多是“先骂错”，这一案例是“先夸错”；骂错和夸错，背后是同一种“没有调查”。",
+          followVideo: "videos/level-4-follow.mp4",
+          followWide: true
         }
       ];
       const ORD = ["一", "二", "三", "四", "五"];
@@ -225,7 +253,7 @@
             </header>
             <div class="wrap">
               <div class="player" id="player"></div>
-              ${level.note || level.image ? "" : `<h1 style="font-size:1.5rem">${level.title || "第 " + (state.level + 1) + " 关"}</h1>${level.title ? "" : '<p class="muted">视频标题留白</p>'}`}
+              ${level.note || level.image || level.post ? "" : `<h1 style="font-size:1.5rem">${level.title || "第 " + (state.level + 1) + " 关"}</h1>${level.title ? "" : '<p class="muted">视频标题留白</p>'}`}
               <div class="${state.level === 1 ? "" : "grid2"}">
                 ${state.level === 1 ? "" : '<button class="ghost-btn" id="summary">内容总结</button>'}
                 <button class="seal-btn${state.level === 1 ? " wide" : ""}" id="comment">发表评论</button>
@@ -236,8 +264,14 @@
           </main>`);
         app.append(root);
         const player = document.getElementById("player");
-        player.classList.toggle("full", Boolean(level.image));
-        if (level.image) {
+        player.classList.toggle("full", Boolean(level.image || level.post));
+        if (level.post) {
+          const replies = (level.replies || []).map((item) => `<div class="reply"><small>${item[0]}</small><p>${item[1]}</p></div>`).join("");
+          const mine = posted ? `<div class="reply mine"><small>我</small><p>${posted}</p></div>` : "";
+          const count = (level.replies || []).length + (posted ? 1 : 0);
+          const picture = level.image ? `<img src="${level.image}" alt="${level.title}">` : "";
+          player.innerHTML = `<article class="note"><header class="note-head"><div class="avatar">某</div><div style="flex:1"><strong>某公众号</strong><p class="muted" style="padding:0;margin:0.15rem 0 0">2024年6月</p></div><span class="follow-chip">关注</span></header><h2 class="post-title">${level.title}</h2>${picture}<p class="post-body">${level.post}</p><div class="note-acts"><span>赞 ${level.likes || 0}</span><span>收藏 ${level.saves || 0}</span><span>评论 ${count}</span></div><div class="note-replies">${mine}${replies}</div></article>`;
+        } else if (level.image) {
           const replies = (level.replies || []).map((item) => `<div class="reply"><small>${item[0]}</small><p>${item[1]}</p></div>`).join("");
           const mine = posted ? `<div class="reply mine"><small>我</small><p>${posted}</p></div>` : "";
           const count = (level.replies || []).length + (posted ? 1 : 0);
@@ -254,7 +288,7 @@
         }
         document.getElementById("home").onclick = () => { state.view = "title"; render(); };
         const summary = document.getElementById("summary");
-        const summaryText = level.summary || (level.image ? "这篇报道的内容总结留白。" : level.note ? "这篇笔记的内容总结留白。" : "此视频的内容总结留白。");
+        const summaryText = level.summary || (level.post ? "这篇推文的内容总结留白。" : level.image ? "这篇报道的内容总结留白。" : level.note ? "这篇笔记的内容总结留白。" : "此视频的内容总结留白。");
         if (summary) summary.onclick = () => openSheet("内容总结", summaryText);
         document.getElementById("comment").onclick = () => openComments(level);
         document.getElementById("follow").onclick = () => openFollow();
@@ -349,9 +383,12 @@
         const level = LEVELS[state.level];
         const prev = state.level === 0 ? "" : `<button class="ghost-btn" id="prev">上一关</button>`;
         const next = state.level < LEVELS.length - 1 ? `<button class="seal-btn wide" id="next">下一关</button>` : `<button class="seal-btn wide" id="next">回到开场</button>`;
-        const video = level.followVideo ? `<video id="follow-vid" src="${level.followVideo}" controls autoplay playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="false" style="display:block;width:min(100%,16rem);aspect-ratio:9/16;object-fit:contain;background:#111;margin:0.75rem auto"></video>` : "";
+        const videoStyle = level.followWide
+          ? "display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#111;margin:0.75rem auto"
+          : "display:block;width:min(100%,16rem);aspect-ratio:9/16;object-fit:contain;background:#111;margin:0.75rem auto";
+        const video = level.followVideo ? `<video id="follow-vid" src="${level.followVideo}" controls autoplay playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="false" style="${videoStyle}"></video>` : "";
         const copy = level.follow || `第 ${state.level + 1} 关的后续留白。`;
-        const sheet = el(`<div class="sheet" id="sheet"><div class="card"><div style="display:flex;justify-content:space-between"><strong>后续</strong><button id="close" style="border:0;background:none;font-size:1.25rem">×</button></div>${video}<p>${copy}</p><div class="${state.level === 0 ? "" : "grid2"}" style="margin-top:1rem">${prev}${next}</div></div></div>`);
+        const sheet = el(`<div class="sheet" id="sheet"><div class="card"><div style="display:flex;justify-content:space-between"><strong>后续</strong><button id="close" style="border:0;background:none;font-size:1.25rem">×</button></div>${video}<p>${copy}</p><div class="${state.level === 0 ? "" : "grid2"}" style="margin-top:1rem">${prev}${next}</div><button class="seal-btn wide" id="step" style="margin-top:0.75rem">下一步</button></div></div>`);
         document.body.append(sheet);
         const vid = document.getElementById("follow-vid");
         if (vid) {
@@ -366,6 +403,12 @@
         const prevBtn = document.getElementById("prev");
         if (prevBtn) prevBtn.onclick = () => { state.level -= 1; state.choice = null; state.panel = ""; closeSheet(); render(); };
         document.getElementById("next").onclick = () => {
+          if (state.level < LEVELS.length - 1) { state.level += 1; state.choice = null; state.panel = ""; }
+          else state.view = "title";
+          closeSheet();
+          render();
+        };
+        document.getElementById("step").onclick = () => {
           if (state.level < LEVELS.length - 1) { state.level += 1; state.choice = null; state.panel = ""; }
           else state.view = "title";
           closeSheet();

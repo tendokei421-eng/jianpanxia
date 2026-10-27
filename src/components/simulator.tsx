@@ -146,7 +146,7 @@ function Danmaku({ lines, playing, mine }: { lines: string[]; playing: boolean; 
   );
 }
 
-function FollowPlayer({ src }: { src: string }) {
+function FollowPlayer({ src, wide }: { src: string; wide?: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const initialSrc = src.replace(/^\//, "");
 
@@ -179,7 +179,11 @@ function FollowPlayer({ src }: { src: string }) {
       autoPlay
       playsInline
       preload="auto"
-      className="mx-auto mb-4 aspect-[9/16] w-full max-w-xs bg-ink object-contain"
+      className={
+        wide
+          ? "mx-auto mb-4 aspect-video w-full bg-ink object-contain"
+          : "mx-auto mb-4 aspect-[9/16] w-full max-w-xs bg-ink object-contain"
+      }
     />
   );
 }
@@ -694,6 +698,45 @@ function NewsCard({
   );
 }
 
+function PostCard({
+  headline,
+  image,
+  body,
+  likes,
+  saves,
+  replies,
+  mine,
+}: {
+  headline: string;
+  image?: string;
+  body: string;
+  likes?: number;
+  saves?: number;
+  replies?: { name: string; text: string }[];
+  mine?: string;
+}) {
+  const [src, setSrc] = useState(image ? image.replace(/^\//, "") : "");
+  useEffect(() => {
+    if (image) setSrc(resolveMedia(image));
+  }, [image]);
+  return (
+    <article className="border border-rule bg-surface">
+      <header className="flex items-center gap-3 px-4 py-3">
+        <div className="grid size-11 shrink-0 place-items-center rounded-full bg-seal text-base text-surface">某</div>
+        <div className="min-w-0 flex-1">
+          <p className="text-base text-ink">某公众号</p>
+          <p className="text-xs text-mute">2024年6月</p>
+        </div>
+        <span className="inline-flex h-8 items-center border border-seal px-3 text-sm text-seal">关注</span>
+      </header>
+      <h2 className="px-4 font-display text-xl leading-snug text-ink">{headline}</h2>
+      {src ? <img src={src} alt={headline} className="mt-3 block w-full" /> : null}
+      <p className="px-4 py-4 text-base leading-relaxed whitespace-pre-wrap text-ink">{body}</p>
+      <CommentThread likes={likes} saves={saves} replies={replies} mine={mine} />
+    </article>
+  );
+}
+
 function StageScreen({
   level,
   index,
@@ -726,7 +769,17 @@ function StageScreen({
       </header>
 
       <div className="mx-auto w-full max-w-lg px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
-        {level.note?.trim() ? (
+        {level.post?.trim() ? (
+          <PostCard
+            headline={level.title.trim() || `第 ${index + 1} 关`}
+            image={level.image}
+            body={level.post}
+            likes={level.likes}
+            saves={level.saves}
+            replies={level.replies}
+            mine={posted}
+          />
+        ) : level.note?.trim() ? (
           <NoteCard text={level.note} likes={level.likes} saves={level.saves} replies={level.replies} mine={posted} />
         ) : level.image ? (
           <NewsCard
@@ -748,7 +801,7 @@ function StageScreen({
           />
         )}
 
-        {level.note?.trim() || level.image ? null : (
+        {level.post?.trim() || level.note?.trim() || level.image ? null : (
           <>
             <h1 className="mt-4 font-display text-xl leading-snug text-ink sm:text-2xl">
               {level.title.trim() || `第 ${index + 1} 关`}
@@ -796,7 +849,7 @@ function StageScreen({
           {level.summary.trim() ? (
             <p className="text-base leading-relaxed whitespace-pre-wrap text-ink">{level.summary}</p>
           ) : (
-            <Blank hint={level.image ? "这篇报道的内容总结留白。" : level.note?.trim() ? "这篇笔记的内容总结留白。" : "此视频的内容总结留白。"} />
+            <Blank hint={level.post?.trim() ? "这篇推文的内容总结留白。" : level.image ? "这篇报道的内容总结留白。" : level.note?.trim() ? "这篇笔记的内容总结留白。" : "此视频的内容总结留白。"} />
           )}
         </Sheet>
       ) : null}
@@ -846,7 +899,7 @@ function StageScreen({
 
       {panel === "follow" ? (
         <Sheet title="后续" level={index} choice={choiceId}>
-          {level.followVideo ? <FollowPlayer src={level.followVideo} /> : null}
+          {level.followVideo ? <FollowPlayer src={level.followVideo} wide={level.followWide} /> : null}
           {level.followUp.trim() ? (
             <p className="text-base leading-relaxed whitespace-pre-wrap text-ink">{level.followUp}</p>
           ) : (
@@ -874,6 +927,12 @@ function StageScreen({
               </a>
             )}
           </div>
+          <a
+            href={index < total - 1 ? stageHref(index + 1) : "?"}
+            className="mt-3 inline-flex h-12 w-full items-center justify-center bg-seal text-surface"
+          >
+            下一步
+          </a>
         </Sheet>
       ) : null}
     </main>
