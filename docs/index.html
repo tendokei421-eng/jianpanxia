@@ -65,6 +65,12 @@
         padding: 0.35rem 0.5rem; font-size: 0.9rem; line-height: 1.45;
       }
       @keyframes fly { to { transform: translate3d(-120vw, 0, 0); } }
+      .note { border: 1px solid var(--rule); background: #fff; }
+      .note-head { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; }
+      .avatar { width: 2.75rem; height: 2.75rem; border-radius: 999px; display: grid; place-items: center; background: var(--seal); color: #fff; flex: none; }
+      .follow-chip { border: 1px solid var(--seal); color: var(--seal); background: #fff; height: 2rem; padding: 0 0.75rem; }
+      .note-body { margin: 0; padding: 0 1rem 1rem; line-height: 1.7; font-size: 1rem; }
+      .note-acts { display: flex; gap: 1.25rem; border-top: 1px solid var(--rule); padding: 0.75rem 1rem; color: var(--mute); font-size: 0.875rem; }
       .blank {
         aspect-ratio: 16/9; display: grid; place-items: center; background: #111; color: #fff;
       }
@@ -122,7 +128,15 @@
           follow: "两人并非父女，男子是一名退休返聘老教师。事件经历“网友质疑—校方称父女—教育局否认父女”的多次反转。反转本身也可能是一种新的片面；调查不是等一个“说法”就收手，而是直到完整事实经得起核实。",
           followVideo: "videos/level-1-follow.mp4"
         },
-        { title: "", video: "", summary: "", danmaku: [], comments: [["待填写", ""], ["待填写", ""], ["不发表评论", ""]] },
+        {
+          title: "",
+          video: "",
+          note: "年轻女孩儿注意了⚠️在长沙五一附近跟朋友出去玩，刚下车遇到老太太要我们给她带路，说她眼睛不好看不见，我们拒绝了。结果在朋友店门口看见七人众万巡有一位小女孩带她进去小巷子里，感觉不对劲，为什么偏偏挑女性，路边也有男性，我马上出去把那个小女孩叫过来，叫她别去小心点，这个女孩儿过来了之后我们就在她后面看着，发现这个老太太居然能看手机？！我就联想到网络上发的那些诱骗年轻女生的视频，想想都毛骨悚然……",
+          summary: "",
+          danmaku: [],
+          comments: [["待填写", ""], ["待填写", ""], ["不发表评论", ""]],
+          follow: ""
+        },
         { title: "", video: "", summary: "", danmaku: [], comments: [["待填写", ""], ["待填写", ""], ["不发表评论", ""]] }
       ];
       const ORD = ["一", "二", "三", "四", "五"];
@@ -167,8 +181,7 @@
             </header>
             <div class="wrap">
               <div class="player" id="player"></div>
-              <h1 style="font-size:1.5rem">${level.title || "第 " + (state.level + 1) + " 关"}</h1>
-              ${level.title ? "" : '<p class="muted">视频标题留白</p>'}
+              ${level.note ? "" : `<h1 style="font-size:1.5rem">${level.title || "第 " + (state.level + 1) + " 关"}</h1>${level.title ? "" : '<p class="muted">视频标题留白</p>'}`}
               <div class="grid2">
                 <button class="ghost-btn" id="summary">内容总结</button>
                 <button class="seal-btn" id="comment">发表评论</button>
@@ -179,19 +192,21 @@
           </main>`);
         app.append(root);
         const player = document.getElementById("player");
-        if (level.video) {
+        if (level.note) {
+          player.innerHTML = `<article class="note"><header class="note-head"><div class="avatar">某</div><div style="flex:1"><strong>某用户</strong><p class="muted" style="padding:0;margin:0.15rem 0 0">笔记</p></div><span class="follow-chip">关注</span></header><p class="note-body">${level.note}</p><div class="note-acts"><span>赞</span><span>收藏</span><span>评论</span></div></article>`;
+        } else if (level.video) {
           player.innerHTML = `<div class="stage" id="stage"><video id="vid" src="${level.video}" controls playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="false" preload="auto"></video><div class="danmaku" id="danmaku"></div></div><button class="playbar" id="play" type="button">播放</button>`;
         } else {
           player.innerHTML = `<div class="blank"><div style="text-align:center"><div class="mark">留</div><p>画面留白</p></div></div>`;
         }
         document.getElementById("home").onclick = () => { state.view = "title"; render(); };
-        document.getElementById("summary").onclick = () => openSheet("内容总结", level.summary || "此视频的内容总结留白。");
+        document.getElementById("summary").onclick = () => openSheet("内容总结", level.summary || (level.note ? "这篇笔记的内容总结留白。" : "此视频的内容总结留白。"));
         document.getElementById("comment").onclick = () => openComments(level);
         document.getElementById("follow").onclick = () => openFollow();
         const vid = document.getElementById("vid");
         if (vid) bindVideo(vid, level, posted);
         else drawDanmaku(document.getElementById("danmaku"), level.danmaku, posted, false);
-        if (state.panel === "summary") openSheet("内容总结", level.summary || "此视频的内容总结留白。");
+        if (state.panel === "summary") openSheet("内容总结", level.summary || (level.note ? "这篇笔记的内容总结留白。" : "此视频的内容总结留白。"));
         if (state.panel === "comments") openComments(level);
         if (state.panel === "follow") openFollow();
       }

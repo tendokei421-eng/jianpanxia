@@ -590,6 +590,27 @@ function TitleScreen() {
   );
 }
 
+function NoteCard({ text }: { text: string }) {
+  return (
+    <article className="border border-rule bg-surface">
+      <header className="flex items-center gap-3 px-4 py-3">
+        <div className="grid size-11 shrink-0 place-items-center rounded-full bg-seal text-base text-surface">某</div>
+        <div className="min-w-0 flex-1">
+          <p className="text-base text-ink">某用户</p>
+          <p className="text-xs text-mute">笔记</p>
+        </div>
+        <span className="inline-flex h-8 items-center border border-seal px-3 text-sm text-seal">关注</span>
+      </header>
+      <p className="px-4 pb-4 text-base leading-relaxed whitespace-pre-wrap text-ink">{text}</p>
+      <div className="flex gap-5 border-t border-rule px-4 py-3 text-sm text-mute">
+        <span>赞</span>
+        <span>收藏</span>
+        <span>评论</span>
+      </div>
+    </article>
+  );
+}
+
 function StageScreen({
   level,
   index,
@@ -622,17 +643,27 @@ function StageScreen({
       </header>
 
       <div className="mx-auto w-full max-w-lg px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
-        <VideoPlayer
-          key={level.id}
-          durationSec={level.durationSec}
-          captions={level.captions}
-          videoSrc={level.videoSrc}
-          danmaku={level.danmaku}
-          mine={posted}
-        />
+        {level.note?.trim() ? (
+          <NoteCard text={level.note} />
+        ) : (
+          <VideoPlayer
+            key={level.id}
+            durationSec={level.durationSec}
+            captions={level.captions}
+            videoSrc={level.videoSrc}
+            danmaku={level.danmaku}
+            mine={posted}
+          />
+        )}
 
-        <h1 className="mt-4 font-display text-xl leading-snug text-ink sm:text-2xl">{level.title.trim() || `第 ${index + 1} 关`}</h1>
-        {!level.title.trim() ? <p className="mt-1 text-sm text-mute">视频标题留白</p> : null}
+        {level.note?.trim() ? null : (
+          <>
+            <h1 className="mt-4 font-display text-xl leading-snug text-ink sm:text-2xl">
+              {level.title.trim() || `第 ${index + 1} 关`}
+            </h1>
+            {!level.title.trim() ? <p className="mt-1 text-sm text-mute">视频标题留白</p> : null}
+          </>
+        )}
 
         <div className="mt-4 grid grid-cols-2 gap-3">
           <a
@@ -671,7 +702,7 @@ function StageScreen({
           {level.summary.trim() ? (
             <p className="text-base leading-relaxed whitespace-pre-wrap text-ink">{level.summary}</p>
           ) : (
-            <Blank hint="此视频的内容总结留白。" />
+            <Blank hint={level.note?.trim() ? "这篇笔记的内容总结留白。" : "此视频的内容总结留白。"} />
           )}
         </Sheet>
       ) : null}

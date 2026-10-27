@@ -37,6 +37,8 @@ export type Level = {
   followUp: string;
   /** 「查看后续」里用自有播放器自动播放的视频。不用外站播放器。 */
   followVideo?: string;
+  /** 有笔记正文时，开场不放播放器，改成论坛帖。 */
+  note?: string;
 };
 
 export const LEVELS: Level[] = [
@@ -98,6 +100,7 @@ export const LEVELS: Level[] = [
     captions: [],
     summary: "",
     danmaku: [],
+    note: "年轻女孩儿注意了⚠️在长沙五一附近跟朋友出去玩，刚下车遇到老太太要我们给她带路，说她眼睛不好看不见，我们拒绝了。结果在朋友店门口看见七人众万巡有一位小女孩带她进去小巷子里，感觉不对劲，为什么偏偏挑女性，路边也有男性，我马上出去把那个小女孩叫过来，叫她别去小心点，这个女孩儿过来了之后我们就在她后面看着，发现这个老太太居然能看手机？！我就联想到网络上发的那些诱骗年轻女生的视频，想想都毛骨悚然……",
     comments: [
       { id: "l2-a", text: "", outcome: "" },
       { id: "l2-b", text: "", outcome: "" },
