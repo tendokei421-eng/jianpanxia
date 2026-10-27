@@ -239,6 +239,22 @@
           document.getElementById("start").onclick = () => { state.view = "play"; state.level = 0; state.panel = ""; state.choice = null; render(); };
           return;
         }
+        if (state.view === "close") {
+          app.append(el(`
+            <main class="screen">
+              <div class="bar"></div>
+              <div class="hero">
+                <div>
+                  <p class="muted">闯关演示</p>
+                  <h1 style="font-size:2rem;margin:0.5rem 0">结语</h1>
+                  <p style="line-height:1.75">四个关卡，四种片面：反转不等于真相，常识不等于事实，表象不等于实干，夸赞不等于调查。百年前，真相不在城里的传闻里，而在湖南五县的田埂上；今天，真相不在热搜的片段里，而在我们愿意多走一步、多看一眼、多等一等的调查中。没有调查，就没有发言权。</p>
+                  <button class="seal-btn wide" id="home" style="margin-top:1.5rem">回到开场</button>
+                </div>
+              </div>
+            </main>`));
+          document.getElementById("home").onclick = () => { state.view = "title"; render(); };
+          return;
+        }
         const level = LEVELS[state.level];
         const posted = state.choice == null ? "" : (level.comments[state.choice][1] || "");
         const root = el(`
@@ -410,7 +426,7 @@
         };
         document.getElementById("step").onclick = () => {
           if (state.level < LEVELS.length - 1) { state.level += 1; state.choice = null; state.panel = ""; }
-          else state.view = "title";
+          else state.view = "close";
           closeSheet();
           render();
         };

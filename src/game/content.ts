@@ -239,6 +239,9 @@ export const LEVELS: Level[] = [
   },
 ];
 
+export const ENDING =
+  "四个关卡，四种片面：反转不等于真相，常识不等于事实，表象不等于实干，夸赞不等于调查。百年前，真相不在城里的传闻里，而在湖南五县的田埂上；今天，真相不在热搜的片段里，而在我们愿意多走一步、多看一眼、多等一等的调查中。没有调查，就没有发言权。";
+
 const ORDINAL = ["一", "二", "三", "四", "五", "六"];
 
 export function optionLabel(option: CommentOption): { text: string; blank: boolean } {

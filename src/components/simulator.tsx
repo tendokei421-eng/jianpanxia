@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState, type PointerEvent, type ReactNode }
 import { Check, Pause, Play, RotateCcw, X } from "lucide-react";
 import {
   LEVELS,
+  ENDING,
   optionKicker,
   optionLabel,
   type Level,
@@ -928,7 +929,7 @@ function StageScreen({
             )}
           </div>
           <a
-            href={index < total - 1 ? stageHref(index + 1) : "?"}
+            href={index < total - 1 ? stageHref(index + 1) : "?view=close"}
             className="mt-3 inline-flex h-12 w-full items-center justify-center bg-seal text-surface"
           >
             下一步
@@ -969,6 +970,24 @@ export function PlayScreen({
   );
 }
 
+function ClosingScreen() {
+  return (
+    <main className="flex min-h-dvh flex-col bg-paper text-ink">
+      <div className="h-1 bg-seal" />
+      <div className="mx-auto flex w-full max-w-lg flex-1 flex-col px-5 pt-8 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
+        <p className="text-sm text-mute">闯关演示</p>
+        <h1 className="mt-8 font-display text-[2rem] leading-tight text-ink">结语</h1>
+        <p className="mt-6 text-base leading-relaxed text-ink">{ENDING}</p>
+        <a href="?" className="mt-10 flex h-14 w-full items-center justify-center bg-seal text-base text-surface">
+          回到开场
+        </a>
+      </div>
+    </main>
+  );
+}
+
 export function HomeScreen() {
   return <TitleScreen />;
 }
+
+export { ClosingScreen };
