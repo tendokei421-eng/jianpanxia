@@ -915,7 +915,14 @@ function StageScreen({
                 上一关
               </a>
             )}
-            {index < total - 1 ? (
+            {index === 3 ? (
+              <a
+                href="?view=close"
+                className="inline-flex h-12 w-full items-center justify-center bg-seal text-surface"
+              >
+                下一步
+              </a>
+            ) : index < total - 1 ? (
               <a
                 href={stageHref(index + 1)}
                 className="inline-flex h-12 w-full items-center justify-center bg-seal text-surface"
@@ -928,12 +935,6 @@ function StageScreen({
               </a>
             )}
           </div>
-          <a
-            href={index < total - 1 ? stageHref(index + 1) : "?view=close"}
-            className="mt-3 inline-flex h-12 w-full items-center justify-center bg-seal text-surface"
-          >
-            下一步
-          </a>
         </Sheet>
       ) : null}
     </main>

@@ -398,13 +398,17 @@
         closeSheet();
         const level = LEVELS[state.level];
         const prev = state.level === 0 ? "" : `<button class="ghost-btn" id="prev">上一关</button>`;
-        const next = state.level < LEVELS.length - 1 ? `<button class="seal-btn wide" id="next">下一关</button>` : `<button class="seal-btn wide" id="next">回到开场</button>`;
+        const next = state.level === 3
+          ? `<button class="seal-btn wide" id="next">下一步</button>`
+          : state.level < LEVELS.length - 1
+            ? `<button class="seal-btn wide" id="next">下一关</button>`
+            : `<button class="seal-btn wide" id="next">回到开场</button>`;
         const videoStyle = level.followWide
           ? "display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#111;margin:0.75rem auto"
           : "display:block;width:min(100%,16rem);aspect-ratio:9/16;object-fit:contain;background:#111;margin:0.75rem auto";
         const video = level.followVideo ? `<video id="follow-vid" src="${level.followVideo}" controls autoplay playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="false" style="${videoStyle}"></video>` : "";
         const copy = level.follow || `第 ${state.level + 1} 关的后续留白。`;
-        const sheet = el(`<div class="sheet" id="sheet"><div class="card"><div style="display:flex;justify-content:space-between"><strong>后续</strong><button id="close" style="border:0;background:none;font-size:1.25rem">×</button></div>${video}<p>${copy}</p><div class="${state.level === 0 ? "" : "grid2"}" style="margin-top:1rem">${prev}${next}</div><button class="seal-btn wide" id="step" style="margin-top:0.75rem">下一步</button></div></div>`);
+        const sheet = el(`<div class="sheet" id="sheet"><div class="card"><div style="display:flex;justify-content:space-between"><strong>后续</strong><button id="close" style="border:0;background:none;font-size:1.25rem">×</button></div>${video}<p>${copy}</p><div class="${state.level === 0 ? "" : "grid2"}" style="margin-top:1rem">${prev}${next}</div></div></div>`);
         document.body.append(sheet);
         const vid = document.getElementById("follow-vid");
         if (vid) {
@@ -419,14 +423,9 @@
         const prevBtn = document.getElementById("prev");
         if (prevBtn) prevBtn.onclick = () => { state.level -= 1; state.choice = null; state.panel = ""; closeSheet(); render(); };
         document.getElementById("next").onclick = () => {
-          if (state.level < LEVELS.length - 1) { state.level += 1; state.choice = null; state.panel = ""; }
+          if (state.level === 3) state.view = "close";
+          else if (state.level < LEVELS.length - 1) { state.level += 1; state.choice = null; state.panel = ""; }
           else state.view = "title";
-          closeSheet();
-          render();
-        };
-        document.getElementById("step").onclick = () => {
-          if (state.level < LEVELS.length - 1) { state.level += 1; state.choice = null; state.panel = ""; }
-          else state.view = "close";
           closeSheet();
           render();
         };
