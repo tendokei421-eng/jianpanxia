@@ -18,6 +18,11 @@ export type CommentOption = {
   posted?: string;
 };
 
+export type NoteReply = {
+  name: string;
+  text: string;
+};
+
 export type Level = {
   id: string;
   /** 视频标题。留空则只显示关卡序号。 */
@@ -39,6 +44,11 @@ export type Level = {
   followVideo?: string;
   /** 有笔记正文时，开场不放播放器，改成论坛帖。 */
   note?: string;
+  /** 笔记的赞、收藏。 */
+  likes?: number;
+  saves?: number;
+  /** 笔记下可滑动的评论。 */
+  replies?: NoteReply[];
 };
 
 export const LEVELS: Level[] = [
@@ -101,6 +111,15 @@ export const LEVELS: Level[] = [
     summary: "",
     danmaku: [],
     note: "年轻女孩儿注意了⚠️在长沙五一附近跟朋友出去玩，刚下车遇到老太太要我们给她带路，说她眼睛不好看不见，我们拒绝了。结果在朋友店门口看见七人众万巡有一位小女孩带她进去小巷子里，感觉不对劲，为什么偏偏挑女性，路边也有男性，我马上出去把那个小女孩叫过来，叫她别去小心点，这个女孩儿过来了之后我们就在她后面看着，发现这个老太太居然能看手机？！我就联想到网络上发的那些诱骗年轻女生的视频，想想都毛骨悚然……",
+    likes: 6821,
+    saves: 3546,
+    replies: [
+      { name: "晚风不晚", text: "这就是拐卖，长沙的姐妹先别单独出门。" },
+      { name: "路过五一", text: "能看手机就是装瞎，拐人已经实锤了。" },
+      { name: "热心市民", text: "专挑女生，典型团伙，看见直接扭走。" },
+      { name: "别装了", text: "还跟她客气什么，这种人就该当场收拾。" },
+      { name: "先问清楚", text: "能看手机只能说明她不是全盲，还不能认定是诱拐。先把经过问清，再交给派出所核实。" },
+    ],
     comments: [
       { id: "l2-a", text: "", outcome: "" },
       { id: "l2-b", text: "", outcome: "" },

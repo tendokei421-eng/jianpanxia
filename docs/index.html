@@ -70,7 +70,11 @@
       .avatar { width: 2.75rem; height: 2.75rem; border-radius: 999px; display: grid; place-items: center; background: var(--seal); color: #fff; flex: none; }
       .follow-chip { border: 1px solid var(--seal); color: var(--seal); background: #fff; height: 2rem; padding: 0 0.75rem; }
       .note-body { margin: 0; padding: 0 1rem 1rem; line-height: 1.7; font-size: 1rem; }
-      .note-acts { display: flex; gap: 1.25rem; border-top: 1px solid var(--rule); padding: 0.75rem 1rem; color: var(--mute); font-size: 0.875rem; }
+      .note-acts { display: flex; gap: 1.25rem; border-top: 1px solid var(--rule); padding: 0.75rem 1rem; font-size: 0.875rem; }
+      .note-replies { max-height: 13rem; overflow-y: auto; border-top: 1px solid var(--rule); }
+      .reply { padding: 0.75rem 1rem; border-bottom: 1px solid var(--rule); }
+      .reply small { color: var(--mute); display: block; }
+      .reply p { margin: 0.25rem 0 0; line-height: 1.6; }
       .blank {
         aspect-ratio: 16/9; display: grid; place-items: center; background: #111; color: #fff;
       }
@@ -132,6 +136,15 @@
           title: "",
           video: "",
           note: "年轻女孩儿注意了⚠️在长沙五一附近跟朋友出去玩，刚下车遇到老太太要我们给她带路，说她眼睛不好看不见，我们拒绝了。结果在朋友店门口看见七人众万巡有一位小女孩带她进去小巷子里，感觉不对劲，为什么偏偏挑女性，路边也有男性，我马上出去把那个小女孩叫过来，叫她别去小心点，这个女孩儿过来了之后我们就在她后面看着，发现这个老太太居然能看手机？！我就联想到网络上发的那些诱骗年轻女生的视频，想想都毛骨悚然……",
+          likes: 6821,
+          saves: 3546,
+          replies: [
+            ["晚风不晚", "这就是拐卖，长沙的姐妹先别单独出门。"],
+            ["路过五一", "能看手机就是装瞎，拐人已经实锤了。"],
+            ["热心市民", "专挑女生，典型团伙，看见直接扭走。"],
+            ["别装了", "还跟她客气什么，这种人就该当场收拾。"],
+            ["先问清楚", "能看手机只能说明她不是全盲，还不能认定是诱拐。先把经过问清，再交给派出所核实。"]
+          ],
           summary: "",
           danmaku: [],
           comments: [["待填写", ""], ["待填写", ""], ["不发表评论", ""]],
@@ -193,7 +206,7 @@
         app.append(root);
         const player = document.getElementById("player");
         if (level.note) {
-          player.innerHTML = `<article class="note"><header class="note-head"><div class="avatar">某</div><div style="flex:1"><strong>某用户</strong><p class="muted" style="padding:0;margin:0.15rem 0 0">笔记</p></div><span class="follow-chip">关注</span></header><p class="note-body">${level.note}</p><div class="note-acts"><span>赞</span><span>收藏</span><span>评论</span></div></article>`;
+          player.innerHTML = `<article class="note"><header class="note-head"><div class="avatar">某</div><div style="flex:1"><strong>某用户</strong><p class="muted" style="padding:0;margin:0.15rem 0 0">笔记</p></div><span class="follow-chip">关注</span></header><p class="note-body">${level.note}</p><div class="note-acts"><span>赞 ${level.likes || 0}</span><span>收藏 ${level.saves || 0}</span><span>评论 ${(level.replies || []).length}</span></div><div class="note-replies">${(level.replies || []).map((item) => `<div class="reply"><small>${item[0]}</small><p>${item[1]}</p></div>`).join("")}</div></article>`;
         } else if (level.video) {
           player.innerHTML = `<div class="stage" id="stage"><video id="vid" src="${level.video}" controls playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="false" preload="auto"></video><div class="danmaku" id="danmaku"></div></div><button class="playbar" id="play" type="button">播放</button>`;
         } else {

@@ -590,7 +590,18 @@ function TitleScreen() {
   );
 }
 
-function NoteCard({ text }: { text: string }) {
+function NoteCard({
+  text,
+  likes,
+  saves,
+  replies,
+}: {
+  text: string;
+  likes?: number;
+  saves?: number;
+  replies?: { name: string; text: string }[];
+}) {
+  const thread = replies ?? [];
   return (
     <article className="border border-rule bg-surface">
       <header className="flex items-center gap-3 px-4 py-3">
@@ -602,11 +613,23 @@ function NoteCard({ text }: { text: string }) {
         <span className="inline-flex h-8 items-center border border-seal px-3 text-sm text-seal">关注</span>
       </header>
       <p className="px-4 pb-4 text-base leading-relaxed whitespace-pre-wrap text-ink">{text}</p>
-      <div className="flex gap-5 border-t border-rule px-4 py-3 text-sm text-mute">
-        <span>赞</span>
-        <span>收藏</span>
-        <span>评论</span>
+      <div className="flex gap-5 border-t border-rule px-4 py-3 text-sm text-ink">
+        <span>赞 {likes ?? 0}</span>
+        <span>收藏 {saves ?? 0}</span>
+        <span className="text-mute">评论 {thread.length}</span>
       </div>
+      {thread.length > 0 ? (
+        <div className="max-h-52 overflow-y-auto border-t border-rule">
+          <ul>
+            {thread.map((reply) => (
+              <li key={reply.name} className="border-b border-rule px-4 py-3 last:border-b-0">
+                <p className="text-xs text-mute">{reply.name}</p>
+                <p className="mt-1 text-base leading-relaxed text-ink">{reply.text}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </article>
   );
 }
@@ -644,7 +667,7 @@ function StageScreen({
 
       <div className="mx-auto w-full max-w-lg px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
         {level.note?.trim() ? (
-          <NoteCard text={level.note} />
+          <NoteCard text={level.note} likes={level.likes} saves={level.saves} replies={level.replies} />
         ) : (
           <VideoPlayer
             key={level.id}
